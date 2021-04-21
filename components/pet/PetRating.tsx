@@ -5,18 +5,20 @@ import {PetRatingProps} from "../../types";
 
 
 export default class PetRating extends Component<PetRatingProps, any> {
+	likePet() {
+		this.props.setLike(!this.props.like)
+	}
 	render() {
 		return (
 			<Card.Actions style={[styles.actions, this.props.style]}>
-				<IconButton icon={this.props.like ? 'heart' : 'heart-outline'} color={"red"}
-				            onPress={() => this.props.setLike(!this.props.like)}/>
-				<IconButton icon={'message-outline'} color={"grey"} onPress={() => {
-				}}/>
+				<IconButton icon={this.props.like ? 'heart' : 'heart-outline'}
+				            color={this.props.like ? 'red' : 'grey'}
+				            onPress={() => this.likePet()}/>
+				<IconButton icon={'message-outline'}
+				            color={"grey"}
+				            onPress={() => console.log('reviews')}/>
+				<IconButton style={styles.empty} size={0} icon={'star'}/>
 				<IconButton icon={'share-variant'} color={"grey"} onPress={() => {
-				}}/>
-				<IconButton icon={'star-outline'} style={styles.empty} size={0} color={"gold"} onPress={() => {
-				}}/>
-				<IconButton icon={'star-outline'} size={28} color={"gold"} onPress={() => {
 				}}/>
 			</Card.Actions>
 		)

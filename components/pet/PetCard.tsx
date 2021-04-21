@@ -8,6 +8,14 @@ import Colors from "../../constants/Colors";
 export default class PetCard extends Component<PetCardProps, any> {
 	state = {like: false}
 
+	constructor(props: PetCardProps) {
+		super(props);
+	}
+
+	componentDidMount() {
+		this.setState(() => ({like: this.props.pet.liked}))
+	}
+
 	render() {
 		return (
 			<Card style={styles.card} theme={DefaultTheme}>
@@ -44,7 +52,6 @@ const styles = StyleSheet.create({
 	rating: {
 		width: '100%',
 		marginVertical: -10,
-		marginLeft: -5,
 	},
 	title: {
 		marginVertical: -10

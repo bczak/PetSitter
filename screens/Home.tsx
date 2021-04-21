@@ -10,13 +10,13 @@ import {Pet} from "../model";
 import firebase from "../api";
 import ChipSelection from "../components/home/ChipSelection";
 import Colors from "../constants/Colors";
-import App from "../App";
 
 const defaultChips = [
 	{id: 'all', text: 'All', selected: true, icon: 'paw'} as ChipModel,
 	{id: 'dogs', text: 'Dogs', selected: false, icon: 'dog'} as ChipModel,
 	{id: 'cats', text: 'Cats', selected: false, icon: 'cat'} as ChipModel,
 	{id: 'rodents', text: 'Rodents', selected: false, icon: 'rodent'} as ChipModel,
+	{id: 'birds', text: 'Birds', selected: false, icon: 'food-drumstick'} as ChipModel,
 ]
 
 export default class HomeScreen extends Component {
@@ -26,13 +26,8 @@ export default class HomeScreen extends Component {
 		chips: defaultChips
 	}
 
-	constructor(props: any) {
-		super(props)
-	}
-
 	async componentDidMount() {
 		await this.onChange()
-		console.log('mounted')
 	}
 
 	async onChange(): Promise<void> {
@@ -64,7 +59,6 @@ export default class HomeScreen extends Component {
 			<View style={styles.container}>
 				<Appbar.Header style={styles.header}>
 					<Appbar.Content title="Pet Sitter"/>
-					<Appbar.Action icon={'login-variant'}/>
 				</Appbar.Header>
 				<ChipSelection chips={this.state.chips} selectChip={(chip: ChipModel) => this.selectChip(chip)}
 				               style={styles.chips}/>
@@ -77,7 +71,9 @@ export default class HomeScreen extends Component {
 }
 
 const styles = StyleSheet.create({
-	container: {},
+	container: {
+		backgroundColor: '#f2f2f2',
+	},
 	cards: {
 		paddingBottom: 150,
 		paddingHorizontal: 4,
@@ -90,7 +86,8 @@ const styles = StyleSheet.create({
 		display: 'flex',
 		flexDirection: 'row',
 		backgroundColor: '#f2f2f2',
-		paddingHorizontal: 10,
-		paddingBottom: 1
+		paddingRight: 5,
+		paddingLeft: 5,
+		paddingBottom: 2,
 	}
 });

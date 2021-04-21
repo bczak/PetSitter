@@ -47,6 +47,11 @@ class API {
 		}
 	}
 
+	async getLike(petId: string, userId: string): Promise<boolean> {
+		let like = await firestore().collection('/pets').doc(petId).collection('likes').doc(userId).get()
+		return like.exists
+	}
+
 	async getPets(): Promise<Pet[]> {
 		let result = await firestore().collection('/pets').get()
 		let pets: Array<Pet> = []
@@ -60,8 +65,10 @@ class API {
 			if (isValidURL(pet.image)) return pet;
 			try {
 				pet.image = await firebase.getImageUrl(pet.image + '.jpg')
+				pet.liked = await firebase.getLike(pet.id, this.user?.uid || '')
 				return pet
 			} catch (e: any) {
+				// TODO: error handling
 				return pet
 			}
 		}))

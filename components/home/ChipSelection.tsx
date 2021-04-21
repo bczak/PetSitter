@@ -1,7 +1,7 @@
 import {ChipModel, ChipSelectionProps} from "../../types";
 import {Chip} from "react-native-paper";
 import React, {Component} from "react";
-import {StyleSheet, View} from "react-native";
+import {ScrollView, StyleSheet, View} from "react-native";
 
 
 export default class ChipSelection extends Component<ChipSelectionProps, any> {
@@ -18,7 +18,11 @@ export default class ChipSelection extends Component<ChipSelectionProps, any> {
 
 	render() {
 		return (
-			<View style={this.props.style}>{this.props.chips.map((chip) => this.renderChip(chip))}</View>
+			<ScrollView showsHorizontalScrollIndicator={false}
+			            horizontal={true}
+			            style={this.props.style}>
+				{this.props.chips.map((chip) => this.renderChip(chip))}{<Chip style={styles.empty}> </Chip>}
+			</ScrollView>
 		)
 	}
 }
@@ -27,6 +31,12 @@ export default class ChipSelection extends Component<ChipSelectionProps, any> {
 const styles = StyleSheet.create({
 	chip: {
 		marginVertical: 5,
-		marginHorizontal: 2
+		marginHorizontal: 2,
+		height: 32,
+		marginBottom: 10
+	},
+	empty: {
+		height: 0,
+		width: 10,
 	}
 })

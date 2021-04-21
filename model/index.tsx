@@ -17,5 +17,6 @@ export interface Pet {
 	type: string
 	owner: string
 	image: string
-	location: Location
+	location: Location,
+	liked?: boolean
 }
