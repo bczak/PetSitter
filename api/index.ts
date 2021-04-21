@@ -1,4 +1,4 @@
-import {app, apps, firestore, initializeApp, storage} from 'firebase';
+import {app, apps, firestore, initializeApp, storage, auth, User} from 'firebase';
 
 import "firebase/auth";
 import "firebase/database";
@@ -19,11 +19,31 @@ const firebaseConfig = {
 };
 
 class API {
+	private user: User | null = null;
+	private auth: any = null
+
 	constructor() {
 		if (!apps.length) {
 			initializeApp(firebaseConfig);
 		} else {
 			app()
+		}
+		this.auth = auth()
+	}
+
+	fetchUser(callback: Function) {
+		this.auth.onAuthStateChanged((user: User | null) => {
+			this.user = user
+			callback(user)
+		})
+	}
+
+	async loginWithEmailAndPassword(email: string, password: string): Promise<string | boolean> {
+		try {
+			await this.auth.signInWithEmailAndPassword(email, password)
+			return false
+		} catch (e) {
+			return e.message
 		}
 	}
 

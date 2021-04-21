@@ -6,38 +6,15 @@ export type RootStackParamList = {
 };
 
 export type AuthStackParamList = {
-	SignIn: undefined;
-	SignUp: undefined;
-	NotFound: undefined
+	SignInScreen: undefined;
+	SignUpScreen: undefined;
+	AuthHomeScreen: undefined;
+	ForgotPasswordScreen: undefined;
+	NotFound: undefined;
 }
 
-export type BottomTabParamList = {
-	Home: undefined;
-	Search: undefined;
-	Chat: undefined;
-	Activity: undefined;
-	Profile: undefined;
-};
-
-export type HomeParamList = {
-	HomeScreen: undefined;
-	FavoriteScreen: undefined;
-};
-export type ScreenParamList = {
-	SearchScreen: undefined;
-};
-export type ChatParamList = {
-	ChatScreen: undefined;
-};
-export type ActivityParamList = {
-	ActivityScreen: undefined;
-};
-export type ProfileParamList = {
-	ProfileScreen: undefined;
-};
-
 export type ScreenProps = {
-	navigation: Object
+	navigation: any
 	route: Object
 }
 export type PetCardProps = {
@@ -53,6 +30,7 @@ export type ChipSelectionProps = {
 	selectChip: Function
 	style: Object
 }
+
 
 export interface ChipModel {
 	text: string

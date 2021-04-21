@@ -22,4 +22,7 @@ export default {
     primaryLight: '#819ca9',
     primaryDark: '#29434e',
   },
+  global: {
+    link: '#0088cc'
+  }
 };
