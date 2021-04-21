@@ -6,17 +6,31 @@ export default {
     screens: {
       Root: {
         screens: {
-          TabOne: {
+          Home: {
             screens: {
-              TabOneScreen: 'one',
-            },
+              HomeScreen: 'one',
+            }
           },
-          TabTwo: {
+          Search: {
             screens: {
-              TabTwoScreen: 'two',
-            },
+              SearchScreen: 'one'
+            }
           },
         },
+      },
+      Auth: {
+        screens: {
+          SignIn: {
+            screens: {
+              SignInScreen: 'one'
+            }
+          },
+          SignUp: {
+            screens: {
+              SignUpScreen: 'one'
+            }
+          }
+        }
       },
       NotFound: '*',
     },

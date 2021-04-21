@@ -1,23 +1,45 @@
-import { StatusBar } from 'expo-status-bar';
-import React from 'react';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import {StatusBar} from "expo-status-bar";
+import React, {Component} from "react";
 
-import useCachedResources from './hooks/useCachedResources';
-import useColorScheme from './hooks/useColorScheme';
-import Navigation from './navigation';
+import {DefaultTheme, Provider as PaperProvider} from 'react-native-paper';
+import Navigation from "./navigation";
+import {LogBox, Text, View} from "react-native";
+import AuthNavigation from "./navigation/AuthNavigation";
+import { auth } from "firebase";
 
-export default function App() {
-  const isLoadingComplete = useCachedResources();
-  const colorScheme = useColorScheme();
+LogBox.ignoreLogs(['Setting a timer'])
 
-  if (!isLoadingComplete) {
-    return null;
-  } else {
-    return (
-      <SafeAreaProvider>
-        <Navigation colorScheme={colorScheme} />
-        <StatusBar />
-      </SafeAreaProvider>
-    );
-  }
+
+export default class App extends Component {
+	state = {user: null, initializing: true}
+
+	onAuthStateChanged(user: any) {
+		this.setState(() => ({user}));
+		if (this.state.initializing) this.setState(() => ({initializing: false}));
+	}
+
+	componentDidMount() {
+		auth().onAuthStateChanged((user) => this.onAuthStateChanged(user)); // unsubscribe on unmount
+	}
+
+	render() {
+		if (this.state.user) {
+			return (
+				<PaperProvider theme={DefaultTheme}>
+					<Navigation/>
+					<StatusBar/>
+				</PaperProvider>
+			);
+		} else {
+			return (
+				<PaperProvider theme={DefaultTheme}>
+					<AuthNavigation />
+					<StatusBar/>
+				</PaperProvider>
+			)
+		}
+	}
 }
+
+
+
