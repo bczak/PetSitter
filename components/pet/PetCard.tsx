@@ -4,6 +4,7 @@ import React, {Component, useEffect, useState} from "react";
 import {StyleSheet} from "react-native";
 import PetRating from "./PetRating";
 import Colors from "../../constants/Colors";
+import firebase from "../../api";
 
 export default class PetCard extends Component<PetCardProps, any> {
 	state = {like: false}
@@ -14,6 +15,11 @@ export default class PetCard extends Component<PetCardProps, any> {
 
 	componentDidMount() {
 		this.setState(() => ({like: this.props.pet.liked}))
+	}
+
+	async like() {
+		let liked = await firebase.setLike();
+		this.setState(() => ({like: liked}))
 	}
 
 	render() {
@@ -29,7 +35,7 @@ export default class PetCard extends Component<PetCardProps, any> {
 				            }}/>}/>
 				<Card.Cover style={styles.cardCover} source={{uri: this.props.pet.image}}/>
 				<PetRating style={styles.rating} like={this.state.like}
-				           setLike={(like: boolean) => this.setState(() => ({like: like}))}/>
+				           setLike={() => this.like()}/>
 			</Card>
 		)
 	}

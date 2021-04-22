@@ -1,5 +1,4 @@
-import {app, apps, firestore, initializeApp, storage, auth, User} from 'firebase';
-
+import {app, apps, firestore, initializeApp, storage, functions, auth, User} from 'firebase';
 import "firebase/auth";
 import "firebase/database";
 import "firebase/firestore";
@@ -29,6 +28,12 @@ class API {
 			app()
 		}
 		this.auth = auth()
+		functions().useFunctionsEmulator('localhost:5001')
+	}
+
+	async setLike(): Promise<boolean> {
+
+		return true;
 	}
 
 	fetchUser(callback: Function) {
