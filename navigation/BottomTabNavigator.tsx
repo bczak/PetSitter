@@ -54,6 +54,7 @@ export default function BottomTabNavigator() {
 }
 const styles = StyleSheet.create({
 	bar: {
-		backgroundColor: Colors.light.primary
+		backgroundColor: Colors.light.primary,
+		height: 54
 	}
 });

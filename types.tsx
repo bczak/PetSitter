@@ -3,6 +3,7 @@ import {Pet} from "./model";
 export type RootStackParamList = {
 	Root: undefined;
 	NotFound: undefined;
+	AddPet: undefined
 };
 
 export type AuthStackParamList = {
@@ -31,6 +32,15 @@ export type ChipSelectionProps = {
 	style: Object
 }
 
+export type DropdownPickerProps = {
+	selected: string
+	label: string
+	items: {
+		label: string
+		value: string
+	}[]
+	select: Function
+}
 
 export interface ChipModel {
 	text: string

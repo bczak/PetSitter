@@ -1,6 +1,6 @@
 import {PetCardProps} from "../../types";
 import {Avatar, Card, DefaultTheme, IconButton, Paragraph, Title} from "react-native-paper";
-import React, {Component, useEffect, useState} from "react";
+import React, {Component} from "react";
 import {StyleSheet} from "react-native";
 import PetRating from "./PetRating";
 import Colors from "../../constants/Colors";
@@ -8,20 +8,27 @@ import firebase from "../../api";
 
 export default class PetCard extends Component<PetCardProps, any> {
 	state = {like: false}
-
+	
 	constructor(props: PetCardProps) {
 		super(props);
 	}
-
+	
 	componentDidMount() {
 		this.setState(() => ({like: this.props.pet.liked}))
 	}
-
-	async like() {
-		let liked = await firebase.setLike();
+	
+	async like(like: boolean) {
+		let liked: boolean;
+		if (like) {
+			this.setState(() => ({like: true}))
+			liked = await firebase.like(this.props.pet.id);
+		} else {
+			this.setState(() => ({like: false}))
+			liked = await firebase.dislike(this.props.pet.id);
+		}
 		this.setState(() => ({like: liked}))
 	}
-
+	
 	render() {
 		return (
 			<Card style={styles.card} theme={DefaultTheme}>
@@ -35,7 +42,7 @@ export default class PetCard extends Component<PetCardProps, any> {
 				            }}/>}/>
 				<Card.Cover style={styles.cardCover} source={{uri: this.props.pet.image}}/>
 				<PetRating style={styles.rating} like={this.state.like}
-				           setLike={() => this.like()}/>
+				           setLike={(like: boolean) => this.like(like)}/>
 			</Card>
 		)
 	}
@@ -50,7 +57,8 @@ const styles = StyleSheet.create({
 		backgroundColor: Colors.light.primary
 	},
 	card: {
-		margin: '1%',
+		marginVertical: 4,
+		borderRadius: 0
 	},
 	cardCover: {
 		height: 300
@@ -70,5 +78,5 @@ const styles = StyleSheet.create({
 		marginHorizontal: -5,
 		marginVertical: -10
 	}
-
+	
 });

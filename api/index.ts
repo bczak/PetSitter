@@ -1,4 +1,4 @@
-import {app, apps, firestore, initializeApp, storage, functions, auth, User} from 'firebase';
+import firebase from 'firebase'
 import "firebase/auth";
 import "firebase/database";
 import "firebase/firestore";
@@ -18,26 +18,56 @@ const firebaseConfig = {
 };
 
 class API {
-	private user: User | null = null;
+	private user: firebase.User | null = null;
 	private auth: any = null
 
 	constructor() {
-		if (!apps.length) {
-			initializeApp(firebaseConfig);
+		if (!firebase.apps.length) {
+			firebase.initializeApp(firebaseConfig);
 		} else {
-			app()
+			firebase.app()
 		}
-		this.auth = auth()
-		functions().useFunctionsEmulator('localhost:5001')
+		this.auth = firebase.auth()
+		firebase.functions().useFunctionsEmulator('http://192.168.0.132:5001');
 	}
 
-	async setLike(): Promise<boolean> {
+	async like(id: string): Promise<boolean> {
+		let like: firebase.functions.HttpsCallable | undefined = firebase.functions().httpsCallable('like')
+		if (like) {
+			try {
+				let result = await like({petId: id})
+				if (result.data.success) {
+					return true;
+				} else {
+					throw new Error(result.data.error)
+				}
+			} catch (e) {
+				console.error(e.message)
+				return false;
+			}
+		}
+		return false;
+	}
 
-		return true;
+	async dislike(id: string): Promise<boolean> {
+		let dislike: firebase.functions.HttpsCallable | undefined = firebase.functions().httpsCallable('dislike')
+		if (dislike) {
+			try {
+				let result = await dislike({petId: id})
+				if (result.data.success) {
+					return false;
+				} else {
+					throw new Error(result.data.error)
+				}
+			} catch (e) {
+				console.error(e.message)
+			}
+		}
+		return false;
 	}
 
 	fetchUser(callback: Function) {
-		this.auth.onAuthStateChanged((user: User | null) => {
+		this.auth.onAuthStateChanged((user: firebase.User | null) => {
 			this.user = user
 			callback(user)
 		})
@@ -53,12 +83,12 @@ class API {
 	}
 
 	async getLike(petId: string, userId: string): Promise<boolean> {
-		let like = await firestore().collection('/pets').doc(petId).collection('likes').doc(userId).get()
+		let like = await firebase.firestore().collection('/pets').doc(petId).collection('likes').doc(userId).get()
 		return like.exists
 	}
 
 	async getPets(): Promise<Pet[]> {
-		let result = await firestore().collection('/pets').get()
+		let result = await firebase.firestore().collection('/pets').get()
 		let pets: Array<Pet> = []
 		result.forEach((item) => {
 			let data = item.data()
@@ -69,8 +99,8 @@ class API {
 		return await Promise.all(pets.map(async (pet: Pet) => {
 			if (isValidURL(pet.image)) return pet;
 			try {
-				pet.image = await firebase.getImageUrl(pet.image + '.jpg')
-				pet.liked = await firebase.getLike(pet.id, this.user?.uid || '')
+				pet.image = await this.getImageUrl(pet.image + '.jpg')
+				pet.liked = await this.getLike(pet.id, this.user?.uid || '')
 				return pet
 			} catch (e: any) {
 				// TODO: error handling
@@ -80,10 +110,10 @@ class API {
 	}
 
 	async getImageUrl(id: string): Promise<string> {
-		return storage().ref(id).getDownloadURL()
+		return firebase.storage().ref(id).getDownloadURL()
 	}
 }
 
-const firebase = new API()
+const api = new API()
 
-export default firebase
+export default api
