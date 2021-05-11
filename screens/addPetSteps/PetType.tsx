@@ -1,5 +1,5 @@
-import React, {Component} from "react";
-import {View, Text, StyleSheet, FlatList, ScrollView, SafeAreaView, KeyboardAvoidingView} from "react-native";
+import React, {Component, RefObject} from "react";
+import {View, Text, StyleSheet, FlatList, ScrollView, SafeAreaView, KeyboardAvoidingView, Keyboard} from "react-native";
 import {StepProps} from "../../types";
 import {Avatar, Card, IconButton, TextInput} from "react-native-paper";
 
@@ -10,6 +10,7 @@ export default class PetType extends Component<StepProps, any> {
 		name: '',
 		other: false
 	}
+	input: any = null
 	private types = [
 		{color: '#880e4f', icon: 'dog', label: 'Dog', type: 'dog'},
 		{color: '#b71c1c', icon: 'cat', label: 'Cat', type: 'cat'},
@@ -34,8 +35,13 @@ export default class PetType extends Component<StepProps, any> {
 	}
 	
 	componentDidMount() {
+		Keyboard.addListener("keyboardDidHide", () => this.input?.blur())
 		this.update(this.props.data.name, this.props.data.type)
 		this.setState(() => ({type: this.props.data.type, name: this.props.data.name}))
+	}
+	
+	componentWillUnmount() {
+		Keyboard.removeAllListeners('keyboardDidHide')
 	}
 	
 	selectType(type: string) {
@@ -78,7 +84,7 @@ export default class PetType extends Component<StepProps, any> {
 		return (
 			<SafeAreaView style={styles.container}>
 				<KeyboardAvoidingView>
-					<TextInput autoFocus={true} label={'Name'} value={this.props.data.name} style={styles.input} mode={'outlined'}
+					<TextInput ref={(r) => this.input = r} autoFocus={true} label={'Name'} value={this.props.data.name} style={styles.input} mode={'outlined'}
 					           onChangeText={(text) => this.inputName(text)}/>
 				</KeyboardAvoidingView>
 				<FlatList data={this.types} numColumns={2} renderItem={this.renderType} keyExtractor={(item) => item.label}/>

@@ -100,4 +100,9 @@ exports.fakeData = functions.https.onRequest((req, res) => {
 	res.sendStatus(200)
 })
 
+exports.addPet = functions.https.onCall(async (data, context) => {
+	if (context.auth === null) return
+	let pet = await admin.firestore().collection('pets').add(data)
+	return pet.id
+})
 

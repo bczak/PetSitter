@@ -1,12 +1,13 @@
 import React, {Component} from "react";
-import {Text, StyleSheet, View} from "react-native";
+import {Text, StyleSheet, View, BackHandler} from "react-native";
 import {ScreenProps} from "../types";
 import {Appbar} from "react-native-paper";
 import PetType from "./addPetSteps/PetType";
 import PetBreed from "./addPetSteps/PetBreed";
 import PetPhotos from "./addPetSteps/PetPhoto";
 import api from "../api";
-import {Pet} from "../model";
+import {Location, Pet} from "../model";
+import PetLocation from "./addPetSteps/PetLocation";
 
 
 export default class AddPet extends Component<ScreenProps, any> {
@@ -18,7 +19,8 @@ export default class AddPet extends Component<ScreenProps, any> {
 		birthday: new Date(),
 		size: '',
 		name: '',
-		photos: []
+		photos: [],
+		location: {latitude: 0, longitude: 0}
 	}
 	
 	prepareStep(data: any, field: string[]) {
@@ -39,8 +41,9 @@ export default class AddPet extends Component<ScreenProps, any> {
 	}
 	
 	prevStep() {
+		console.log(this.state.activeStep)
 		if (this.state.activeStep == 0) {
-			this.props.navigation.goBack()
+			this.props.navigation.navigate('Home')
 		} else {
 			this.setState(() => ({activeStep: this.state.activeStep - 1}))
 		}
@@ -53,14 +56,22 @@ export default class AddPet extends Component<ScreenProps, any> {
 	}
 	
 	async nextStep() {
-		if (this.state.activeStep + 1 === 3) { // FIXME: 3 - count of steps
-			console.log('process')
-			// let pet: Pet = {
-			// 	name: this.state.name,
-			// 	type: this.state.type,
-			// 	breed: this.state.breed,
-			// }
-			// await api.addPet(pet)
+		if (this.state.activeStep + 1 === 4) { // FIXME: 3 - count of steps
+			let location: Location = await api.getLocation(this.state.location) as Location
+			let pet: Pet = {
+				name: this.state.name,
+				type: this.state.type,
+				breed: this.state.breed,
+				image: this.state.photos[0],
+				otherImages: this.state.photos.slice(1),
+				location: {...location, lg: this.state.location.longitude, lt: this.state.location.latitude, radius: 2000}
+			}
+			try {
+				await api.addPet(pet)
+				this.props.navigation.navigate('Home')
+			} catch (e) {
+				console.error(e.message)
+			}
 		} else {
 			this.setState(() => ({activeStep: this.state.activeStep + 1, nextStepAvailable: false}))
 		}
@@ -85,6 +96,12 @@ export default class AddPet extends Component<ScreenProps, any> {
 				                      data={{...this.state}}
 				                      onPrev={() => this.prevStep()}/>,
 				title: 'Photos'
+			},
+			{
+				component: <PetLocation onData={(data: any) => this.prepareStep(data, ['location'])}
+				                        data={{...this.state}}
+				                        onPrev={() => this.prevStep()}/>,
+				title: 'Location'
 			},
 		]
 		

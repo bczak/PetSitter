@@ -80,7 +80,8 @@ export default class SignUp extends Component<ScreenProps, any> {
 			this.blur()
 			let message = await api.createUser(this.state.name.value, this.state.email.value, this.state.password.value)
 			if (message !== null) {
-				this.setState(() => ({snackbar: {visible: true, message}}))
+				console.log(message)
+				this.setState(() => ({snackbar: {visible: true, message: message}}))
 			}
 		}
 	}
@@ -174,7 +175,7 @@ export default class SignUp extends Component<ScreenProps, any> {
 				<Snackbar
 					style={styles.snackbar}
 					visible={this.state.snackbar.visible}
-					duration={4000}
+					duration={5000}
 					action={{
 						label: 'OK',
 						onPress: () => {
@@ -201,9 +202,8 @@ const styles = StyleSheet.create({
 	input: {},
 	button: {},
 	snackbar: {
-		position: 'absolute',
-		top: getStatusBarHeight() + 50,
-		width: Dimensions.get('window').width - 15
+		width: Dimensions.get('window').width - 15,
+		bottom: getStatusBarHeight() + 100
 	},
 	text: {
 		textAlign: 'center',

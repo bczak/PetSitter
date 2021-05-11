@@ -29,5 +29,11 @@ export const nameValidator = (name: string) => {
 
 export const translateIcons = (type: string) => {
 	if(type === 'bird') return 'food-drumstick'
+	if(type === 'other') return 'paw'
 	return type
+}
+export const translateTypes = (icon: string) => {
+	if(icon === 'food-drumstick') return 'bird'
+	if(icon === 'paw') return 'all'
+	return icon
 }

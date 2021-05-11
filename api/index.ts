@@ -6,6 +6,7 @@ import "firebase/storage";
 import {Pet, User} from "../model";
 import {isValidURL} from "../utils";
 
+const googleMapsApi = 'AIzaSyDyVFu4Ipno3Av-PXWGwcm8cD95umaisbQ'
 const firebaseConfig = {
 	apiKey: "AIzaSyB2lJUJ-qpoHP4hx8nDMZ_iWV1pyIUxbJc",
 	authDomain: "pet-finder-65822.firebaseapp.com",
@@ -21,10 +22,11 @@ class API {
 	
 	constructor() {
 		if (!firebase.apps.length) {
+			let server = '192.168.249.45'
 			firebase.initializeApp(firebaseConfig);
-			firebase.functions().useEmulator('192.168.38.217', 5001);
-			firebase.firestore().useEmulator('192.168.38.217', 8080)
-			firebase.auth().useEmulator('http://192.168.38.217:9099')
+			firebase.functions().useEmulator(server, 5001);
+			firebase.firestore().useEmulator(server, 8080)
+			firebase.auth().useEmulator(`http://${server}:9099`)
 		} else {
 			firebase.app()
 		}
@@ -86,8 +88,14 @@ class API {
 		return like.exists
 	}
 	
-	async getPets(): Promise<Pet[]> {
-		let result = await firebase.firestore().collection('/pets').get()
+	async getPets(type: string = 'all'): Promise<Pet[]> {
+		
+		let result: firebase.firestore.QuerySnapshot
+		if (type === 'all') {
+			result = await firebase.firestore().collection('/pets').get()
+		} else {
+			result = await firebase.firestore().collection('/pets').where('type', '==', type).get()
+		}
 		let pets: Array<Pet> = []
 		result.forEach((item) => {
 			let data = item.data()
@@ -95,7 +103,6 @@ class API {
 			pet.id = item.id
 			pets.push(pet)
 		})
-		console.log(pets)
 		return await Promise.all(pets.map(async (pet: Pet) => {
 			if (isValidURL(pet.image)) return pet;
 			try {
@@ -114,9 +121,25 @@ class API {
 	}
 	
 	async addPet(pet: Pet): Promise<Pet> {
+		// upload main image
+		let response = await fetch(pet.image)
+		let name = Date.now().toString()
+		firebase.storage().ref(name + '.jpg').put(await response.blob())
+		pet.image = name
 		
-		return {} as Pet
+		// upload other images
+		for (let i = 0; i < (pet.otherImages || []).length; i++) {
+			if (pet.otherImages?.[i] === undefined) {
+				continue
+			}
+			let name = Date.now().toString()
+			firebase.storage().ref(name + '.jpg').put(await response.blob())
+			pet.otherImages[i] = name
+		}
+		let result = firebase.functions().httpsCallable('addPet')(pet)
+		return (await result).data
 	}
+	
 	
 	async createUser(name: string, email: string, password: string) {
 		let credential = null
@@ -136,6 +159,18 @@ class API {
 			lastname: name.split(' ')[1] || ''
 		} as User)
 		return null
+	}
+	
+	
+	async getLocation(coordinated: any) {
+		let res = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${coordinated.latitude} ${coordinated.longitude}&key=${googleMapsApi}`)
+		res = await res.json()
+		return {
+			/*@ts-ignore*/
+			town: res.results[0].address_components.filter(i => i.types.includes('sublocality'))[0].long_name,
+			/*@ts-ignore*/
+			country: res.results[0].address_components.filter(i => i.types.includes('country'))[0].long_name
+		}
 	}
 }
 

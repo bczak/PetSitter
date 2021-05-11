@@ -8,9 +8,9 @@ export interface User {
 export interface Location {
 	town: string
 	country: string
-	lt: number
-	lg: number
-	radius: number
+	lt?: number
+	lg?: number
+	radius?: number
 }
 
 export interface Pet {

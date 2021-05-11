@@ -14,6 +14,12 @@ export default class PetPhotos extends Component<StepProps, any> {
 		snackBarText: ''
 	}
 	
+	componentDidMount() {
+		if (this.props.data.photos.length > 0) {
+			this.props.onData({photos: [...this.props.data.photos]})
+		}
+	}
+	
 	constructor(props: StepProps) {
 		super(props);
 		this.renderImage = this.renderImage.bind(this)
@@ -43,7 +49,7 @@ export default class PetPhotos extends Component<StepProps, any> {
 			mediaTypes: ImagePicker.MediaTypeOptions.Images,
 			allowsEditing: true,
 			aspect: [1, 1],
-			quality: 1
+			quality: 0.3
 		})
 		if (!result.cancelled) {
 			this.props.onData({photos: [...this.props.data.photos, result.uri]})
@@ -55,8 +61,9 @@ export default class PetPhotos extends Component<StepProps, any> {
 			mediaTypes: ImagePicker.MediaTypeOptions.Images,
 			allowsEditing: true,
 			aspect: [1, 1],
-			quality: 1
+			quality: 0.3,
 		})
+		console.log(result)
 		if (!result.cancelled) {
 			this.props.onData({photos: [...this.props.data.photos, result.uri]})
 		}

@@ -6,18 +6,18 @@ import {
 	NativeScrollEvent,
 	NativeSyntheticEvent,
 	RefreshControl,
-	ScrollView,
 	StyleSheet,
 	View
 } from 'react-native';
 
-import {Appbar, FAB} from "react-native-paper";
+import {Appbar, Card, FAB} from "react-native-paper";
 import {ChipModel, ScreenProps} from "../types";
 import PetCard from "../components/pet/PetCard";
 import {Pet} from "../model";
 import firebase from "../api";
 import ChipSelection from "../components/home/ChipSelection";
 import {getStatusBarHeight} from "react-native-status-bar-height";
+import {translateTypes} from "../utils";
 
 const defaultChips = [
 	{id: 'all', text: 'All', selected: true, icon: 'paw'} as ChipModel,
@@ -32,16 +32,19 @@ export default class HomeScreen extends Component<ScreenProps, any> {
 		refresh: false,
 		pets: [] as Pet[],
 		chips: defaultChips,
-		fabVisible: false
+		fabVisible: true
 	}
 	
 	async componentDidMount() {
+		console.log('home')
 		await this.onChange()
 	}
 	
 	async onChange(): Promise<void> {
+		let selected = this.state.chips.filter(i => i.selected).map(i => i.icon)[0]
 		this.setState(() => ({refresh: true, fabVisible: false}))
-		this.setState({...this.state, pets: await firebase.getPets()});
+		let pets = await firebase.getPets(translateTypes(selected))
+		this.setState({...this.state, pets: pets});
 		this.setState(() => ({refresh: false, fabVisible: true}))
 	}
 	
@@ -53,7 +56,7 @@ export default class HomeScreen extends Component<ScreenProps, any> {
 		return <PetCard pet={data.item}/>
 	}
 	
-	selectChip(chip: ChipModel) {
+	async selectChip(chip: ChipModel) {
 		let updatedChip = this.state.chips.map((c: ChipModel) => {
 			if (c.id == chip.id && c.selected) return null
 			c.selected = chip.id === c.id;
@@ -61,6 +64,7 @@ export default class HomeScreen extends Component<ScreenProps, any> {
 		})
 		if (updatedChip.includes(null)) return;
 		this.setState(() => ({chips: updatedChip}))
+		await this.onChange()
 	}
 	
 	onScroll(e: NativeSyntheticEvent<NativeScrollEvent>) {
@@ -74,7 +78,7 @@ export default class HomeScreen extends Component<ScreenProps, any> {
 	render() {
 		return (
 			<View style={styles.container}>
-				<Appbar.Header>
+				<Appbar.Header style={styles.header}>
 					<Appbar.Content title="Pet Sitter"/>
 					<Appbar.Action icon={'filter-variant'}/>
 				</Appbar.Header>
@@ -85,9 +89,10 @@ export default class HomeScreen extends Component<ScreenProps, any> {
 				<FlatList onScrollToTop={() => this.setState(() => ({fabVisible: true}))}
 				          onScroll={(e) => this.onScroll(e)}
 				          style={styles.list}
+				          initialNumToRender={2}
 				          contentContainerStyle={styles.cards} data={this.state.pets}
 				          refreshControl={<RefreshControl refreshing={this.state.refresh} onRefresh={() => this.onRefresh()}/>}
-				          renderItem={this.renderPet} keyExtractor={(item: Pet) => item.id || Date.now().toString()}/>
+				          renderItem={this.renderPet} keyExtractor={(item: Pet | null) => item?.id || Date.now().toString()}/>
 				<FAB animated={true} style={styles.add} icon={"plus"} visible={this.state.fabVisible}
 				     onPress={() => {
 					     this.props.navigation.navigate('AddPet')
@@ -101,6 +106,9 @@ const styles = StyleSheet.create({
 	cards: {
 		paddingBottom: 140,
 	},
+	header: {
+		width: '100%'
+	},
 	chips: {
 		display: 'flex',
 		flexDirection: 'row',
@@ -110,15 +118,20 @@ const styles = StyleSheet.create({
 	},
 	container: {
 		position: 'relative',
+		flex: 1,
+		alignItems: 'flex-start',
 		minHeight: Dimensions.get('screen').height + getStatusBarHeight(),
 	},
 	list: {
-		marginBottom: getStatusBarHeight() + 100
+		marginTop: 0
 	},
 	add: {
 		position: 'absolute',
 		marginHorizontal: 5,
 		right: 0,
-		bottom: 54 + 90,
+		bottom: 140,
+	},
+	empty: {
+		height: 300
 	}
 });
