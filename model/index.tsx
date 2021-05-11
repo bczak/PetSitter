@@ -1,6 +1,8 @@
 export interface User {
 	displayName: string
-	uid: string
+	uid: string,
+	firstname?: string,
+	lastname?: string
 }
 
 export interface Location {
@@ -12,11 +14,14 @@ export interface Location {
 }
 
 export interface Pet {
-	id: string
+	id?: string
 	name: string
 	type: string
-	owner: string
+	owner?: string
 	image: string
 	location: Location,
-	liked?: boolean
+	liked?: boolean,
+	otherImages?: string[],
+	birthday?: string,
+	breed?: string
 }

@@ -7,13 +7,12 @@ import ActivityScreen from "../screens/Activity";
 import ProfileScreen from "../screens/Profile";
 import {createMaterialBottomTabNavigator} from '@react-navigation/material-bottom-tabs';
 import {StyleSheet} from "react-native";
-import Colors from "../constants/Colors";
-
+import Theme from '../constants/Theme'
 const Tab = createMaterialBottomTabNavigator();
 
 export default function BottomTabNavigator() {
 	return (
-		<Tab.Navigator barStyle={styles.bar}  initialRouteName="Home" shifting={true} sceneAnimationEnabled={true}>
+		<Tab.Navigator barStyle={styles.bar} theme={Theme} initialRouteName="Home" shifting={true} sceneAnimationEnabled={true}>
 			<Tab.Screen
 				name="Home"
 				component={HomeScreen}
@@ -54,7 +53,7 @@ export default function BottomTabNavigator() {
 }
 const styles = StyleSheet.create({
 	bar: {
-		backgroundColor: Colors.light.primary,
-		height: 54
+		height: 54,
+		backgroundColor: Theme.colors.primary
 	}
 });

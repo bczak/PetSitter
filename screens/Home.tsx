@@ -1,15 +1,23 @@
 import * as React from 'react';
 import {Component} from 'react';
-import {FlatList, NativeScrollEvent, NativeSyntheticEvent, RefreshControl, StyleSheet} from 'react-native';
+import {
+	Dimensions,
+	FlatList,
+	NativeScrollEvent,
+	NativeSyntheticEvent,
+	RefreshControl,
+	ScrollView,
+	StyleSheet,
+	View
+} from 'react-native';
 
-import {View} from '../components/Themed';
 import {Appbar, FAB} from "react-native-paper";
 import {ChipModel, ScreenProps} from "../types";
 import PetCard from "../components/pet/PetCard";
 import {Pet} from "../model";
 import firebase from "../api";
 import ChipSelection from "../components/home/ChipSelection";
-import Colors from "../constants/Colors";
+import {getStatusBarHeight} from "react-native-status-bar-height";
 
 const defaultChips = [
 	{id: 'all', text: 'All', selected: true, icon: 'paw'} as ChipModel,
@@ -66,7 +74,7 @@ export default class HomeScreen extends Component<ScreenProps, any> {
 	render() {
 		return (
 			<View style={styles.container}>
-				<Appbar.Header style={styles.header}>
+				<Appbar.Header>
 					<Appbar.Content title="Pet Sitter"/>
 					<Appbar.Action icon={'filter-variant'}/>
 				</Appbar.Header>
@@ -76,40 +84,41 @@ export default class HomeScreen extends Component<ScreenProps, any> {
 				
 				<FlatList onScrollToTop={() => this.setState(() => ({fabVisible: true}))}
 				          onScroll={(e) => this.onScroll(e)}
+				          style={styles.list}
 				          contentContainerStyle={styles.cards} data={this.state.pets}
 				          refreshControl={<RefreshControl refreshing={this.state.refresh} onRefresh={() => this.onRefresh()}/>}
-				          renderItem={this.renderPet} keyExtractor={(item: Pet) => item.id}/>
+				          renderItem={this.renderPet} keyExtractor={(item: Pet) => item.id || Date.now().toString()}/>
 				<FAB animated={true} style={styles.add} icon={"plus"} visible={this.state.fabVisible}
-				     onPress={() => {this.props.navigation.navigate('AddPet')}}/>
+				     onPress={() => {
+					     this.props.navigation.navigate('AddPet')
+				     }}/>
 			</View>
 		);
 	}
 }
 
 const styles = StyleSheet.create({
-	container: {
-		backgroundColor: '#f2f2f2',
-	},
 	cards: {
 		paddingBottom: 140,
-		backgroundColor: '#f2f2f2',
-	},
-	header: {
-		backgroundColor: Colors.light.primary
 	},
 	chips: {
 		display: 'flex',
 		flexDirection: 'row',
-		backgroundColor: '#f2f2f2',
 		paddingRight: 5,
 		paddingLeft: 5,
 		paddingBottom: 2,
+	},
+	container: {
+		position: 'relative',
+		minHeight: Dimensions.get('screen').height + getStatusBarHeight(),
+	},
+	list: {
+		marginBottom: getStatusBarHeight() + 100
 	},
 	add: {
 		position: 'absolute',
 		marginHorizontal: 5,
 		right: 0,
 		bottom: 54 + 90,
-		backgroundColor: "#0088cc"
 	}
 });

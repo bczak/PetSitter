@@ -1,10 +1,9 @@
 import firebase from 'firebase'
 import "firebase/auth";
-import "firebase/database";
 import "firebase/firestore";
 import "firebase/functions";
 import "firebase/storage";
-import {Pet} from "../model";
+import {Pet, User} from "../model";
 import {isValidURL} from "../utils";
 
 const firebaseConfig = {
@@ -19,18 +18,18 @@ const firebaseConfig = {
 
 class API {
 	private user: firebase.User | null = null;
-	private auth: any = null
-
+	
 	constructor() {
 		if (!firebase.apps.length) {
 			firebase.initializeApp(firebaseConfig);
+			firebase.functions().useEmulator('192.168.38.217', 5001);
+			firebase.firestore().useEmulator('192.168.38.217', 8080)
+			firebase.auth().useEmulator('http://192.168.38.217:9099')
 		} else {
 			firebase.app()
 		}
-		this.auth = firebase.auth()
-		firebase.functions().useFunctionsEmulator('http://192.168.0.132:5001');
 	}
-
+	
 	async like(id: string): Promise<boolean> {
 		let like: firebase.functions.HttpsCallable | undefined = firebase.functions().httpsCallable('like')
 		if (like) {
@@ -48,7 +47,7 @@ class API {
 		}
 		return false;
 	}
-
+	
 	async dislike(id: string): Promise<boolean> {
 		let dislike: firebase.functions.HttpsCallable | undefined = firebase.functions().httpsCallable('dislike')
 		if (dislike) {
@@ -65,28 +64,28 @@ class API {
 		}
 		return false;
 	}
-
+	
 	fetchUser(callback: Function) {
-		this.auth.onAuthStateChanged((user: firebase.User | null) => {
+		firebase.auth().onAuthStateChanged((user: firebase.User | null) => {
 			this.user = user
 			callback(user)
 		})
 	}
-
-	async loginWithEmailAndPassword(email: string, password: string): Promise<string | boolean> {
+	
+	async loginWithEmailAndPassword(email: string, password: string): Promise<string> {
 		try {
-			await this.auth.signInWithEmailAndPassword(email, password)
-			return false
+			await firebase.auth().signInWithEmailAndPassword(email, password)
+			return ''
 		} catch (e) {
 			return e.message
 		}
 	}
-
+	
 	async getLike(petId: string, userId: string): Promise<boolean> {
 		let like = await firebase.firestore().collection('/pets').doc(petId).collection('likes').doc(userId).get()
 		return like.exists
 	}
-
+	
 	async getPets(): Promise<Pet[]> {
 		let result = await firebase.firestore().collection('/pets').get()
 		let pets: Array<Pet> = []
@@ -96,11 +95,12 @@ class API {
 			pet.id = item.id
 			pets.push(pet)
 		})
+		console.log(pets)
 		return await Promise.all(pets.map(async (pet: Pet) => {
 			if (isValidURL(pet.image)) return pet;
 			try {
 				pet.image = await this.getImageUrl(pet.image + '.jpg')
-				pet.liked = await this.getLike(pet.id, this.user?.uid || '')
+				pet.liked = await this.getLike(pet.id || '', this.user?.uid || '')
 				return pet
 			} catch (e: any) {
 				// TODO: error handling
@@ -108,9 +108,34 @@ class API {
 			}
 		}))
 	}
-
+	
 	async getImageUrl(id: string): Promise<string> {
 		return firebase.storage().ref(id).getDownloadURL()
+	}
+	
+	async addPet(pet: Pet): Promise<Pet> {
+		
+		return {} as Pet
+	}
+	
+	async createUser(name: string, email: string, password: string) {
+		let credential = null
+		try {
+			credential = await firebase.auth().createUserWithEmailAndPassword(email, password);
+		} catch (e) {
+			return e.message
+		}
+		let user = credential.user
+		if (user === null) {
+			return 'Unknown error';
+		}
+		await firebase.firestore().collection('users').add({
+			uid: user.uid,
+			displayName: name,
+			firstname: name.split(' ')[0] || '',
+			lastname: name.split(' ')[1] || ''
+		} as User)
+		return null
 	}
 }
 

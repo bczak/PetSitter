@@ -4,7 +4,6 @@ import Header from "../components/auth/Header";
 import {Avatar, Button, Divider, Paragraph, Text} from "react-native-paper";
 import {ScreenProps} from "../types";
 import {StyleSheet, View} from "react-native";
-import Colors from "../constants/Colors";
 
 export default class AuthHome extends Component<ScreenProps, any> {
 	render() {
@@ -19,14 +18,12 @@ export default class AuthHome extends Component<ScreenProps, any> {
 					<Button
 						style={styles.button}
 						mode="contained"
-						color={Colors.light.primary}
 						onPress={() => this.props.navigation.navigate('SignInScreen')}>
 						Login
 					</Button>
 					<Button
 						style={styles.button}
 						mode="outlined"
-						color={Colors.light.primaryDark}
 						onPress={() => this.props.navigation.navigate('SignUpScreen')}>
 						Sign Up
 					</Button>

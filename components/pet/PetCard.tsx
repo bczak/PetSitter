@@ -3,8 +3,8 @@ import {Avatar, Card, DefaultTheme, IconButton, Paragraph, Title} from "react-na
 import React, {Component} from "react";
 import {StyleSheet} from "react-native";
 import PetRating from "./PetRating";
-import Colors from "../../constants/Colors";
 import firebase from "../../api";
+import {translateIcons} from "../../utils";
 
 export default class PetCard extends Component<PetCardProps, any> {
 	state = {like: false}
@@ -18,6 +18,7 @@ export default class PetCard extends Component<PetCardProps, any> {
 	}
 	
 	async like(like: boolean) {
+		if (this.props.pet.id == null) return;
 		let liked: boolean;
 		if (like) {
 			this.setState(() => ({like: true}))
@@ -37,7 +38,7 @@ export default class PetCard extends Component<PetCardProps, any> {
 				            leftStyle={styles.titleLeft}
 				            subtitle={this.props.pet.location?.town || ''}
 				            subtitleStyle={styles.subtitle}
-				            left={(props) => <Avatar.Icon style={styles.avatar} {...props} icon={this.props.pet.type}/>}
+				            left={(props) => <Avatar.Icon style={styles.avatar} {...props} icon={translateIcons(this.props.pet.type)}/>}
 				            right={(props) => <IconButton {...props} icon="dots-vertical" onPress={() => {
 				            }}/>}/>
 				<Card.Cover style={styles.cardCover} source={{uri: this.props.pet.image}}/>
@@ -53,9 +54,7 @@ const styles = StyleSheet.create({
 	space: {
 		height: 10
 	},
-	avatar: {
-		backgroundColor: Colors.light.primary
-	},
+	avatar: {},
 	card: {
 		marginVertical: 4,
 		borderRadius: 0

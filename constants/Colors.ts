@@ -26,3 +26,4 @@ export default {
     link: '#0088cc'
   }
 };
+

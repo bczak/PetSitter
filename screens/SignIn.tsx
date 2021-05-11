@@ -6,7 +6,6 @@ import Header from "../components/auth/Header";
 import BackButton from "../components/auth/BackButton";
 import {ScreenProps} from "../types";
 import {emailValidator, passwordValidator} from "../utils";
-import Colors from "../constants/Colors";
 import firebase from "../api";
 
 
@@ -28,6 +27,7 @@ export default class SignIn extends Component<ScreenProps, any> {
 			return;
 		}
 		let status = await firebase.loginWithEmailAndPassword(this.state.email.value, this.state.password.value)
+		console.log(status)
 		if (status) {
 			this.setState(() => ({snackbar: true, message: status}))
 		} else {
@@ -119,7 +119,6 @@ const styles = StyleSheet.create({
 	},
 	input: {},
 	button: {
-		backgroundColor: Colors.light.primary,
 	},
 	snackbar: {
 		position: 'absolute',
@@ -133,7 +132,6 @@ const styles = StyleSheet.create({
 		fontSize: 15
 	},
 	label: {
-		color: Colors.light.primary,
 		textAlign: 'right',
 		marginBottom: 20,
 		flexGrow: 1,

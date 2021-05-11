@@ -66,4 +66,38 @@ exports.dislike = functions.https.onCall(async (data, context) => {
 	}
 })
 
+exports.fakeData = functions.https.onRequest((req, res) => {
+	admin.firestore().collection('pets').add({
+		name: 'Arnold',
+		type: 'dog',
+		owner: 'user1',
+		image: 'n02104029_3493',
+		location: {
+			town: 'Praha',
+			country: 'cz'
+		}
+	}).then(r => undefined)
+	admin.firestore().collection('pets').add({
+		name: 'Batman',
+		type: 'cat',
+		owner: 'user2',
+		image: 'n02104365_8706',
+		location: {
+			town: 'Praha',
+			country: 'cz'
+		}
+	}).then(r => undefined)
+	admin.firestore().collection('pets').add({
+		name: 'TukTuk',
+		type: 'bird',
+		owner: 'user4',
+		image: 'n02104029_3493',
+		location: {
+			town: 'Praha',
+			country: 'cz'
+		}
+	}).then(r => undefined)
+	res.sendStatus(200)
+})
+
 

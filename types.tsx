@@ -48,3 +48,9 @@ export interface ChipModel {
 	id: string
 	icon: string
 }
+
+export type StepProps = {
+	onData: Function
+	onPrev: Function
+	data?: any
+}
