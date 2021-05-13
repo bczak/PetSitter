@@ -1,7 +1,7 @@
 import {Pet} from "./model";
 
 export type RootStackParamList = {
-	Root: undefined;
+	App: undefined;
 	NotFound: undefined;
 	AddPet: undefined
 };
@@ -24,7 +24,7 @@ export type PetCardProps = {
 export type PetRatingProps = {
 	like: boolean
 	setLike: Function
-	style: Object
+	style?: Object
 }
 export type ChipSelectionProps = {
 	chips: ChipModel[]

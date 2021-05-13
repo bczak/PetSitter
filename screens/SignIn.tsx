@@ -1,50 +1,49 @@
-import React, {Component} from "react";
-import {Dimensions, StyleSheet, Text, View} from "react-native";
+import React, { Component } from "react";
+import { Dimensions, KeyboardAvoidingView, StyleSheet, Text, View } from "react-native";
 import Background from "../components/auth/Background";
-import {Button, HelperText, Snackbar, TextInput} from "react-native-paper";
+import { Button, HelperText, Snackbar, TextInput } from "react-native-paper";
 import Header from "../components/auth/Header";
 import BackButton from "../components/auth/BackButton";
-import {ScreenProps} from "../types";
-import {emailValidator, passwordValidator} from "../utils";
+import { ScreenProps } from "../types";
+import { emailValidator, passwordValidator } from "../utils";
 import firebase from "../api";
-
 
 export default class SignIn extends Component<ScreenProps, any> {
 	readonly state = {
-		email: {value: '', error: ''},
-		password: {value: '', error: ''},
+		email: { value: "tashpulatov.jakhongir@gmail.com", error: "" },
+		password: { value: "test1234", error: "" },
 		snackbar: false,
-		message: ''
-	}
+		message: "",
+	};
 
 	async _onLoginPressed() {
 		const emailError = emailValidator(this.state.email.value);
 		const passwordError = passwordValidator(this.state.password.value);
 
 		if (emailError || passwordError) {
-			this.setState(() => ({email: {...this.state.email, error: emailError}}));
-			this.setState(() => ({password: {...this.state.password, error: passwordError}}));
+			this.setState(() => ({ email: { ...this.state.email, error: emailError } }));
+			this.setState(() => ({ password: { ...this.state.password, error: passwordError } }));
 			return;
 		}
-		let status = await firebase.loginWithEmailAndPassword(this.state.email.value, this.state.password.value)
-		console.log(status)
+		let status = await firebase.loginWithEmailAndPassword(this.state.email.value, this.state.password.value);
+		console.log(status);
 		if (status) {
-			this.setState(() => ({snackbar: true, message: status}))
+			this.setState(() => ({ snackbar: true, message: status }));
 		} else {
-			console.log('good')
+			console.log("good");
 		}
 		// this.props.navigation.navigate('AuthHomeScreen');
-	};
+	}
 
 	onDismissSnackBar() {
-		this.setState(() => ({snackbar: false, message: ''}))
+		this.setState(() => ({ snackbar: false, message: "" }));
 	}
 
 	render() {
 		return (
 			<Background>
-				<BackButton goBack={() => this.props.navigation.navigate('AuthHomeScreen')}/>
-				<View style={styles.main}>
+				<BackButton goBack={() => this.props.navigation.navigate("AuthHomeScreen")} />
+				<KeyboardAvoidingView style={styles.main}>
 					<Header>Welcome back</Header>
 					<TextInput
 						label="Email"
@@ -53,7 +52,7 @@ export default class SignIn extends Component<ScreenProps, any> {
 						returnKeyType="next"
 						value={this.state.email.value}
 						onChangeText={(text: string) => {
-							this.setState(() => ({email: {value: text, error: ''}}))
+							this.setState(() => ({ email: { value: text, error: "" } }));
 						}}
 						error={!!this.state.email.error}
 						autoCapitalize="none"
@@ -70,14 +69,14 @@ export default class SignIn extends Component<ScreenProps, any> {
 						returnKeyType="done"
 						mode={"outlined"}
 						value={this.state.password.value}
-						onChangeText={(text) => this.setState(() => ({password: {value: text, error: ''}}))}
+						onChangeText={(text) => this.setState(() => ({ password: { value: text, error: "" } }))}
 						error={!!this.state.password.error}
 						secureTextEntry
 					/>
 					<HelperText type="error" visible={this.state.password.error.length > 0}>
 						{this.state.password.error}
 					</HelperText>
-					<Text onPress={() => this.props.navigation.navigate('ForgotPasswordScreen')} style={styles.label}>
+					<Text onPress={() => this.props.navigation.navigate("ForgotPasswordScreen")} style={styles.label}>
 						Forgot your password?
 					</Text>
 					<Button mode="contained" style={styles.button} onPress={() => this._onLoginPressed()}>
@@ -85,57 +84,57 @@ export default class SignIn extends Component<ScreenProps, any> {
 					</Button>
 
 					<View style={styles.row}>
-						<Text style={styles.text} onPress={() => this.props.navigation.navigate('SignUpScreen')}>Don’t have an
-							account?
-							Sign Up</Text>
+						<Text style={styles.text} onPress={() => this.props.navigation.navigate("SignUpScreen")}>
+							Don’t have an account? Sign Up
+						</Text>
 					</View>
-				</View>
-				<Snackbar
-					style={styles.snackbar}
-					visible={this.state.snackbar}
-					duration={3000}
-					onDismiss={() => this.onDismissSnackBar()}
-					action={{
-						label: 'Undo',
-						onPress: () => this.onDismissSnackBar(),
-					}}>
-					{this.state.message}
-				</Snackbar>
+					<Snackbar
+						style={styles.snackbar}
+						visible={this.state.snackbar}
+						duration={3000}
+						onDismiss={() => this.onDismissSnackBar()}
+						action={{
+							label: "OK",
+							onPress: () => this.onDismissSnackBar(),
+						}}
+					>
+						{this.state.message}
+					</Snackbar>
+				</KeyboardAvoidingView>
 			</Background>
 		);
 	}
 }
 
-
 const styles = StyleSheet.create({
 	main: {
-		marginVertical: 200
+		paddingTop: 200,
+		height: Dimensions.get("window").height,
 	},
 	row: {
-		display: 'flex',
-		flexDirection: 'row',
-		textAlign: 'center',
-		marginVertical: 20
+		display: "flex",
+		flexDirection: "row",
+		textAlign: "center",
+		marginVertical: 20,
 	},
 	input: {},
-	button: {
-	},
+	button: {},
 	snackbar: {
-		position: 'absolute',
-		bottom: 100,
-		width: Dimensions.get('window').width - 15
+		position: "absolute",
+		bottom: 20,
+		left: -20,
+		width: Dimensions.get("screen").width - 16,
 	},
 	text: {
-		textAlign: 'center',
-		width: '100%',
-		fontWeight: 'bold',
-		fontSize: 15
+		textAlign: "center",
+		width: "100%",
+		fontWeight: "bold",
+		fontSize: 15,
 	},
 	label: {
-		textAlign: 'right',
+		textAlign: "right",
 		marginBottom: 20,
-		flexGrow: 1,
 		fontSize: 15,
-		fontWeight: 'bold',
+		fontWeight: "bold",
 	},
 });

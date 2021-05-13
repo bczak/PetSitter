@@ -35,13 +35,13 @@ export default class PetType extends Component<StepProps, any> {
 	}
 	
 	componentDidMount() {
-		Keyboard.addListener("keyboardDidHide", () => this.input?.blur())
+		// Keyboard.addListener("keyboardDidHide", () => this.input?.blur())
 		this.update(this.props.data.name, this.props.data.type)
 		this.setState(() => ({type: this.props.data.type, name: this.props.data.name}))
 	}
 	
 	componentWillUnmount() {
-		Keyboard.removeAllListeners('keyboardDidHide')
+		// Keyboard.removeAllListeners('keyboardDidHide')
 	}
 	
 	selectType(type: string) {
@@ -84,7 +84,7 @@ export default class PetType extends Component<StepProps, any> {
 		return (
 			<SafeAreaView style={styles.container}>
 				<KeyboardAvoidingView>
-					<TextInput ref={(r) => this.input = r} autoFocus={true} label={'Name'} value={this.props.data.name} style={styles.input} mode={'outlined'}
+					<TextInput ref={(r) => this.input = r}  label={'Name'} value={this.props.data.name} style={styles.input} mode={'outlined'}
 					           onChangeText={(text) => this.inputName(text)}/>
 				</KeyboardAvoidingView>
 				<FlatList data={this.types} numColumns={2} renderItem={this.renderType} keyExtractor={(item) => item.label}/>

@@ -1,102 +1,113 @@
-import * as React from 'react';
-import {Component} from 'react';
+import * as React from "react";
+import { Component } from "react";
 import {
+	Animated,
 	Dimensions,
 	FlatList,
 	NativeScrollEvent,
 	NativeSyntheticEvent,
 	RefreshControl,
+	ScrollView,
 	StyleSheet,
-	View
-} from 'react-native';
+	View,
+} from "react-native";
 
-import {Appbar, Card, FAB} from "react-native-paper";
-import {ChipModel, ScreenProps} from "../types";
+import { Appbar, Card, FAB } from "react-native-paper";
+import { ChipModel, ScreenProps } from "../types";
 import PetCard from "../components/pet/PetCard";
-import {Pet} from "../model";
+import { Pet } from "../model";
 import firebase from "../api";
 import ChipSelection from "../components/home/ChipSelection";
-import {getStatusBarHeight} from "react-native-status-bar-height";
-import {translateTypes} from "../utils";
+import { getStatusBarHeight } from "react-native-status-bar-height";
+import { translateTypes } from "../utils";
 
 const defaultChips = [
-	{id: 'all', text: 'All', selected: true, icon: 'paw'} as ChipModel,
-	{id: 'dogs', text: 'Dogs', selected: false, icon: 'dog'} as ChipModel,
-	{id: 'cats', text: 'Cats', selected: false, icon: 'cat'} as ChipModel,
-	{id: 'rodents', text: 'Rodents', selected: false, icon: 'rodent'} as ChipModel,
-	{id: 'birds', text: 'Birds', selected: false, icon: 'food-drumstick'} as ChipModel,
-]
+	{ id: "all", text: "All", selected: true, icon: "paw" } as ChipModel,
+	{ id: "dogs", text: "Dogs", selected: false, icon: "dog" } as ChipModel,
+	{ id: "cats", text: "Cats", selected: false, icon: "cat" } as ChipModel,
+	{ id: "rodents", text: "Rodents", selected: false, icon: "rodent" } as ChipModel,
+	{ id: "birds", text: "Birds", selected: false, icon: "food-drumstick" } as ChipModel,
+];
 
 export default class HomeScreen extends Component<ScreenProps, any> {
 	readonly state = {
 		refresh: false,
 		pets: [] as Pet[],
 		chips: defaultChips,
-		fabVisible: true
-	}
-	
+		fabVisible: true,
+	};
+
 	async componentDidMount() {
-		console.log('home')
-		await this.onChange()
+		await this.onChange();
 	}
-	
+
 	async onChange(): Promise<void> {
-		let selected = this.state.chips.filter(i => i.selected).map(i => i.icon)[0]
-		this.setState(() => ({refresh: true, fabVisible: false}))
-		let pets = await firebase.getPets(translateTypes(selected))
-		this.setState({...this.state, pets: pets});
-		this.setState(() => ({refresh: false, fabVisible: true}))
+		let selected = this.state.chips.filter((i) => i.selected).map((i) => i.icon)[0];
+		this.setState(() => ({ refresh: true, fabVisible: false }));
+		let pets = await firebase.getPets(translateTypes(selected));
+		this.setState({ ...this.state, pets: pets });
+		this.setState(() => ({ refresh: false, fabVisible: true }));
 	}
-	
+
 	async onRefresh() {
-		await this.onChange()
+		await this.onChange();
 	}
-	
+
 	renderPet(data: { item: Pet }) {
-		return <PetCard pet={data.item}/>
+		return <PetCard pet={data.item} />;
 	}
-	
+
 	async selectChip(chip: ChipModel) {
 		let updatedChip = this.state.chips.map((c: ChipModel) => {
-			if (c.id == chip.id && c.selected) return null
+			if (c.id == chip.id && c.selected) return null;
 			c.selected = chip.id === c.id;
 			return c;
-		})
+		});
 		if (updatedChip.includes(null)) return;
-		this.setState(() => ({chips: updatedChip}))
-		await this.onChange()
+		this.setState(() => ({ chips: updatedChip }));
+		await this.onChange();
 	}
-	
+
 	onScroll(e: NativeSyntheticEvent<NativeScrollEvent>) {
 		if ((e.nativeEvent?.velocity?.y || 0) >= 0 && e.nativeEvent.contentOffset.y > 0) {
-			this.setState(() => ({fabVisible: false}))
+			this.setState(() => ({ fabVisible: false }));
 		} else {
-			this.setState(() => ({fabVisible: true}))
+			this.setState(() => ({ fabVisible: true }));
 		}
 	}
-	
+
 	render() {
 		return (
 			<View style={styles.container}>
 				<Appbar.Header style={styles.header}>
-					<Appbar.Content title="Pet Sitter"/>
-					<Appbar.Action icon={'filter-variant'}/>
+					<Appbar.Content title="Pet Sitter" />
+					<Appbar.Action icon={"filter-variant"} />
 				</Appbar.Header>
-				<ChipSelection chips={this.state.chips}
-				               selectChip={(chip: ChipModel) => this.selectChip(chip)}
-				               style={styles.chips}/>
-				
-				<FlatList onScrollToTop={() => this.setState(() => ({fabVisible: true}))}
-				          onScroll={(e) => this.onScroll(e)}
-				          style={styles.list}
-				          initialNumToRender={2}
-				          contentContainerStyle={styles.cards} data={this.state.pets}
-				          refreshControl={<RefreshControl refreshing={this.state.refresh} onRefresh={() => this.onRefresh()}/>}
-				          renderItem={this.renderPet} keyExtractor={(item: Pet | null) => item?.id || Date.now().toString()}/>
-				<FAB animated={true} style={styles.add} icon={"plus"} visible={this.state.fabVisible}
-				     onPress={() => {
-					     this.props.navigation.navigate('AddPet')
-				     }}/>
+
+				<FlatList
+					ListHeaderComponent={
+						<ChipSelection chips={this.state.chips} selectChip={(chip: ChipModel) => this.selectChip(chip)} />
+					}
+					ListHeaderComponentStyle={styles.chips}
+					onScrollToTop={() => this.setState(() => ({ fabVisible: true }))}
+					onScroll={(e) => this.onScroll(e)}
+					style={styles.list}
+					initialNumToRender={2}
+					contentContainerStyle={styles.cards}
+					data={this.state.pets}
+					refreshControl={<RefreshControl refreshing={this.state.refresh} onRefresh={() => this.onRefresh()} />}
+					renderItem={this.renderPet}
+					keyExtractor={(item: Pet | null) => item?.id || Date.now().toString()}
+				/>
+				<FAB
+					animated={true}
+					style={styles.add}
+					icon={"plus"}
+					visible={this.state.fabVisible}
+					onPress={() => {
+						this.props.navigation.push("AddPet");
+					}}
+				/>
 			</View>
 		);
 	}
@@ -107,31 +118,29 @@ const styles = StyleSheet.create({
 		paddingBottom: 140,
 	},
 	header: {
-		width: '100%'
+		width: "100%",
 	},
 	chips: {
-		display: 'flex',
-		flexDirection: 'row',
-		paddingRight: 5,
-		paddingLeft: 5,
-		paddingBottom: 2,
+		display: "flex",
+		flexDirection: "row",
+		marginBottom: -8,
 	},
 	container: {
-		position: 'relative',
+		position: "relative",
 		flex: 1,
-		alignItems: 'flex-start',
-		minHeight: Dimensions.get('screen').height + getStatusBarHeight(),
+		alignItems: "flex-start",
+		minHeight: Dimensions.get("screen").height + getStatusBarHeight(),
 	},
 	list: {
-		marginTop: 0
+		marginTop: 0,
 	},
 	add: {
-		position: 'absolute',
+		position: "absolute",
 		marginHorizontal: 5,
 		right: 0,
 		bottom: 140,
 	},
 	empty: {
-		height: 300
-	}
+		height: 300,
+	},
 });
