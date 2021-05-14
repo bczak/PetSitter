@@ -8,7 +8,8 @@ import AuthNavigation from "./navigation/AuthNavigation";
 import api from "./api";
 import Theme from './constants/Theme'
 import firebase from "firebase";
-
+import { enableScreens } from 'react-native-screens';
+enableScreens();
 LogBox.ignoreLogs(['Setting a timer'])
 
 export default class App extends Component {

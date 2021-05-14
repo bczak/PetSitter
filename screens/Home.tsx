@@ -12,7 +12,7 @@ import {
 	View,
 } from "react-native";
 
-import { Appbar, Card, FAB } from "react-native-paper";
+import { Appbar, Avatar, Card, FAB, Headline, Text } from "react-native-paper";
 import { ChipModel, ScreenProps } from "../types";
 import PetCard from "../components/pet/PetCard";
 import { Pet } from "../model";
@@ -20,6 +20,7 @@ import firebase from "../api";
 import ChipSelection from "../components/home/ChipSelection";
 import { getStatusBarHeight } from "react-native-status-bar-height";
 import { translateTypes } from "../utils";
+import { MemoizedLoader } from "../components/Loader";
 
 const defaultChips = [
 	{ id: "all", text: "All", selected: true, icon: "paw" } as ChipModel,
@@ -27,8 +28,15 @@ const defaultChips = [
 	{ id: "cats", text: "Cats", selected: false, icon: "cat" } as ChipModel,
 	{ id: "rodents", text: "Rodents", selected: false, icon: "rodent" } as ChipModel,
 	{ id: "birds", text: "Birds", selected: false, icon: "food-drumstick" } as ChipModel,
+	{ id: "fishes", text: "Fishes", selected: false, icon: "fish" } as ChipModel,
 ];
 
+const EmptyCard = () => (
+	<View style={styles.emptyCard}>
+		<Avatar.Icon icon="paw" size={100} />
+		<Headline>Nothing here yet</Headline>
+	</View>
+);
 export default class HomeScreen extends Component<ScreenProps, any> {
 	readonly state = {
 		refresh: false,
@@ -39,6 +47,12 @@ export default class HomeScreen extends Component<ScreenProps, any> {
 
 	async componentDidMount() {
 		await this.onChange();
+	}
+
+	componentDidUpdate() {
+		if (this.props.route?.params?.refresh > Date.now()) {
+			this.onChange();
+		}
 	}
 
 	async onChange(): Promise<void> {
@@ -53,8 +67,12 @@ export default class HomeScreen extends Component<ScreenProps, any> {
 		await this.onChange();
 	}
 
+	async openPet(pet: Pet) {
+		console.log(pet);
+	}
+
 	renderPet(data: { item: Pet }) {
-		return <PetCard pet={data.item} />;
+		return <PetCard pet={data.item} open={() => this.openPet(data.item)} />;
 	}
 
 	async selectChip(chip: ChipModel) {
@@ -89,6 +107,7 @@ export default class HomeScreen extends Component<ScreenProps, any> {
 						<ChipSelection chips={this.state.chips} selectChip={(chip: ChipModel) => this.selectChip(chip)} />
 					}
 					ListHeaderComponentStyle={styles.chips}
+					ListEmptyComponent={<EmptyCard />}
 					onScrollToTop={() => this.setState(() => ({ fabVisible: true }))}
 					onScroll={(e) => this.onScroll(e)}
 					style={styles.list}
@@ -96,7 +115,7 @@ export default class HomeScreen extends Component<ScreenProps, any> {
 					contentContainerStyle={styles.cards}
 					data={this.state.pets}
 					refreshControl={<RefreshControl refreshing={this.state.refresh} onRefresh={() => this.onRefresh()} />}
-					renderItem={this.renderPet}
+					renderItem={(_) => this.renderPet(_)}
 					keyExtractor={(item: Pet | null) => item?.id || Date.now().toString()}
 				/>
 				<FAB
@@ -129,7 +148,7 @@ const styles = StyleSheet.create({
 		position: "relative",
 		flex: 1,
 		alignItems: "flex-start",
-		minHeight: Dimensions.get("screen").height + getStatusBarHeight(),
+		minHeight: Dimensions.get("window").height + getStatusBarHeight(),
 	},
 	list: {
 		marginTop: 0,
@@ -138,9 +157,17 @@ const styles = StyleSheet.create({
 		position: "absolute",
 		marginHorizontal: 5,
 		right: 0,
-		bottom: 140,
+		bottom: getStatusBarHeight() + 60,
 	},
 	empty: {
 		height: 300,
+	},
+	emptyCard: {
+		flex: 1,
+		justifyContent: "space-evenly",
+		width: Dimensions.get("screen").width,
+		alignItems: "center",
+		flexDirection: "column",
+		height: Dimensions.get("screen").height / 3,
 	},
 });

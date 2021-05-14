@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Dimensions, StyleSheet, Text, View } from "react-native";
+import { Dimensions, KeyboardAvoidingView, StyleSheet, Text, View } from "react-native";
 import BackButton from "../components/auth/BackButton";
 import Header from "../components/auth/Header";
 import { Button, HelperText, TextInput, Snackbar } from "react-native-paper";
@@ -17,15 +17,15 @@ export default class SignUp extends Component<ScreenProps, any> {
 	};
 	state = {
 		email: {
-			value: "",
+			value: "tashpulatov.jakhongir@gmail.com",
 			error: "",
 		},
 		name: {
-			value: "",
+			value: "Jakhongir Tashpulatov",
 			error: "",
 		},
 		password: {
-			value: "",
+			value: "test1234",
 			error: "",
 			show: false,
 		},
@@ -86,8 +86,6 @@ export default class SignUp extends Component<ScreenProps, any> {
 		}
 	}
 
-	async componentWillUnmount() {}
-
 	onDismissSnackBar() {
 		this.setState(() => ({ snackbar: false, message: "" }));
 	}
@@ -95,8 +93,7 @@ export default class SignUp extends Component<ScreenProps, any> {
 	render() {
 		return (
 			<Background>
-				<BackButton goBack={() => this.props.navigation.navigate("AuthHomeScreen")} />
-				<View style={styles.main}>
+				<KeyboardAvoidingView style={styles.main} behavior="position">
 					<Header>Welcome, new user!</Header>
 					<TextInput
 						ref={(input: any) => (this.ref.name = input)}
@@ -182,18 +179,18 @@ export default class SignUp extends Component<ScreenProps, any> {
 							Already have an account? Sign In
 						</Text>
 					</View>
-				</View>
-				<Snackbar
-					style={styles.snackbar}
-					visible={this.state.snackbar.visible}
-					duration={5000}
-					action={{
-						label: "OK",
-					}}
-					onDismiss={() => this.setState(() => ({ snackbar: { visible: false, message: "" } }))}
-				>
-					{this.state.snackbar.message}
-				</Snackbar>
+					<Snackbar
+						style={styles.snackbar}
+						visible={this.state.snackbar.visible}
+						duration={5000}
+						action={{
+							label: "OK",
+						}}
+						onDismiss={() => this.setState(() => ({ snackbar: { visible: false, message: "" } }))}
+					>
+						{this.state.snackbar.message}
+					</Snackbar>
+				</KeyboardAvoidingView>
 			</Background>
 		);
 	}
@@ -201,7 +198,7 @@ export default class SignUp extends Component<ScreenProps, any> {
 
 const styles = StyleSheet.create({
 	main: {
-		marginVertical: 150,
+		paddingTop: "20%",
 	},
 	row: {
 		display: "flex",
@@ -212,8 +209,10 @@ const styles = StyleSheet.create({
 	input: {},
 	button: {},
 	snackbar: {
-		width: Dimensions.get("window").width - 15,
-		bottom: getStatusBarHeight() + 100,
+		position: "absolute",
+		bottom: -80,
+		left: -20,
+		width: Dimensions.get("screen").width - 16,
 	},
 	text: {
 		textAlign: "center",
@@ -224,7 +223,6 @@ const styles = StyleSheet.create({
 	label: {
 		textAlign: "right",
 		marginBottom: 20,
-		flexGrow: 1,
 		fontSize: 15,
 		fontWeight: "bold",
 	},

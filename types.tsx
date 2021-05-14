@@ -16,10 +16,11 @@ export type AuthStackParamList = {
 
 export type ScreenProps = {
 	navigation: any
-	route: Object
+	route: any
 }
 export type PetCardProps = {
-	pet: Pet;
+	pet: Pet
+	open: Function
 }
 export type PetRatingProps = {
 	like: boolean
@@ -29,7 +30,7 @@ export type PetRatingProps = {
 export type ChipSelectionProps = {
 	chips: ChipModel[]
 	selectChip: Function
-	style: Object
+	style?: Object
 }
 
 export type DropdownPickerProps = {

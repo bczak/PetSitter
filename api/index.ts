@@ -137,6 +137,7 @@ class API {
 				continue;
 			}
 			let name = Date.now().toString();
+			let response = await fetch(pet.otherImages?.[i]);
 			firebase
 				.storage()
 				.ref(name + ".jpg")
@@ -156,6 +157,7 @@ class API {
 		} catch (e) {
 			return e.message;
 		}
+
 		let user = credential.user;
 		fb.auth().signOut();
 		if (user === null) {
@@ -180,7 +182,7 @@ class API {
 		res = await res.json();
 		return {
 			/*@ts-ignore*/
-			town: res.results[0].address_components.filter((i) => i.types.includes("sublocality"))[0].long_name,
+			town: res.results[0].address_components.filter((i) => i.types.includes("sublocality"))[0]?.long_name || null,
 			/*@ts-ignore*/
 			country: res.results[0].address_components.filter((i) => i.types.includes("country"))[0].long_name,
 		};

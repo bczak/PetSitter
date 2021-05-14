@@ -8,6 +8,7 @@ import PetPhotos from "./addPetSteps/PetPhoto";
 import api from "../api";
 import { Location, Pet } from "../model";
 import PetLocation from "./addPetSteps/PetLocation";
+import { MemoizedLoader } from "../components/Loader";
 
 export default class AddPet extends Component<ScreenProps, any> {
 	state = {
@@ -16,10 +17,11 @@ export default class AddPet extends Component<ScreenProps, any> {
 		type: "",
 		breed: "",
 		birthday: new Date(),
-		size: "",
+		weight: "",
 		name: "",
 		photos: [],
 		location: { latitude: 0, longitude: 0 },
+		loading: false
 	};
 
 	prepareStep(data: any, field: string[]) {
@@ -56,6 +58,7 @@ export default class AddPet extends Component<ScreenProps, any> {
 	async nextStep() {
 		if (this.state.activeStep + 1 === 4) {
 			// FIXME: 3 - count of steps
+			this.setState(() => ({loading: true}))
 			let location: Location = (await api.getLocation(this.state.location)) as Location;
 			let pet: Pet = {
 				name: this.state.name,
@@ -67,9 +70,9 @@ export default class AddPet extends Component<ScreenProps, any> {
 			};
 			try {
 				await api.addPet(pet);
-				this.props.navigation.navigate("Root");
+				this.props.navigation.navigate("Home", { refresh: Date.now() + 1000 });
 			} catch (e) {
-				console.error(e.message);
+				console.log(e.message);
 			}
 		} else {
 			this.setState(() => ({ activeStep: this.state.activeStep + 1, nextStepAvailable: false }));
@@ -91,7 +94,7 @@ export default class AddPet extends Component<ScreenProps, any> {
 			{
 				component: (
 					<PetBreed
-						onData={(data: any) => this.prepareStep(data, ["breed", "size", "birthday"])}
+						onData={(data: any) => this.prepareStep(data, ["breed", "weight", "birthday"])}
 						data={{ ...this.state }}
 						onPrev={() => this.prevStep()}
 					/>
@@ -133,6 +136,7 @@ export default class AddPet extends Component<ScreenProps, any> {
 					{this.state.nextStepAvailable && <Appbar.Action icon={"check"} onPress={() => this.nextStep()} />}
 				</Appbar.Header>
 				{step.component}
+				<MemoizedLoader status={this.state.loading} />
 			</View>
 		);
 	}

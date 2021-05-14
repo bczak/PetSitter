@@ -10,6 +10,7 @@ export default function ActivityScreen() {
 	);
 }
 
+
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,

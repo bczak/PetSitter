@@ -42,8 +42,7 @@ export default class SignIn extends Component<ScreenProps, any> {
 	render() {
 		return (
 			<Background>
-				<BackButton goBack={() => this.props.navigation.navigate("AuthHomeScreen")} />
-				<KeyboardAvoidingView style={styles.main}>
+				<KeyboardAvoidingView style={styles.main} behavior='height'>
 					<Header>Welcome back</Header>
 					<TextInput
 						label="Email"
@@ -108,7 +107,7 @@ export default class SignIn extends Component<ScreenProps, any> {
 
 const styles = StyleSheet.create({
 	main: {
-		paddingTop: 200,
+		paddingTop: '20%',
 		height: Dimensions.get("window").height,
 	},
 	row: {
