@@ -5,6 +5,8 @@ export function isValidURL(string: string): boolean {
 	return (res !== null)
 }
 
+export const capitalized = (name: string) => name.charAt(0).toUpperCase() + name.slice(1)
+
 
 export const emailValidator = (email: string) => {
 	const re = /\S+@\S+\.\S+/;

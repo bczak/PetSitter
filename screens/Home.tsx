@@ -68,7 +68,7 @@ export default class HomeScreen extends Component<ScreenProps, any> {
 	}
 
 	async openPet(pet: Pet) {
-		console.log(pet);
+		this.props.navigation.navigate("Pet", { pet: pet });
 	}
 
 	renderPet(data: { item: Pet }) {

@@ -2,7 +2,7 @@ import React from "react";
 import { View, StyleSheet, Dimensions } from "react-native";
 import { ActivityIndicator } from "react-native-paper";
 
-export function Loader({ status }) {
+export function Loader({ status } : any) {
 	return (
 		status && (
 			<View style={styles.container}>

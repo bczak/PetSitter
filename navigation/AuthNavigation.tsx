@@ -1,6 +1,5 @@
 import {Component} from "react";
 import {DefaultTheme, NavigationContainer} from "@react-navigation/native";
-import LinkingConfiguration from "./LinkingConfiguration";
 import * as React from "react";
 import NotFoundScreen from "../screens/NotFoundScreen";
 import {createStackNavigator} from "@react-navigation/stack";
@@ -14,7 +13,6 @@ export default class AuthNavigation extends Component {
 	render() {
 		return (
 			<NavigationContainer
-				linking={LinkingConfiguration}
 				theme={DefaultTheme}>
 				<AuthNavigator/>
 			</NavigationContainer>

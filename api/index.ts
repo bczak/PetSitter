@@ -67,6 +67,21 @@ class API {
 		return false;
 	}
 
+	async getPet(id: string) {
+		let data = await firebase.firestore().collection("pets").doc(id).get();
+		let pet = data.data();
+		if (pet === undefined) return null;
+		if (isValidURL(pet.image)) return pet;
+		try {
+			pet.image = await this.getImageUrl(pet.image + ".jpg");
+			pet.otherImages = await Promise.all(pet.otherImages.map((i: string) => this.getImageUrl(i + ".jpg")));
+			pet.liked = await this.getLike(pet.id || "", this.user?.uid || "");
+			return pet;
+		} catch (e: any) {
+			// TODO: error handling
+			return pet;
+		}
+	}
 	fetchUser(callback: Function) {
 		firebase.auth().onAuthStateChanged((user: firebase.User | null) => {
 			this.user = user;

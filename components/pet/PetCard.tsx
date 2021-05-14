@@ -44,7 +44,6 @@ export default class PetCard extends Component<PetCardProps, any> {
 						left={(props) => (
 							<Avatar.Icon style={styles.avatar} {...props} icon={translateIcons(this.props.pet.type)} />
 						)}
-						right={(props) => <IconButton {...props} icon="dots-vertical" onPress={() => {}} />}
 					/>
 					<Card.Cover style={styles.cardCover} source={{ uri: this.props.pet.image }} />
 				</TouchableOpacity>
