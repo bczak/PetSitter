@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "663222435357",
+    "project_id": "pet-finder-65822",
+    "storage_bucket": "pet-finder-65822.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:663222435357:android:4ee237e1386859714bd0f4",
+        "android_client_info": {
+          "package_name": "cz.enky.pet"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "663222435357-8gnsaso516utclecavbgc038dbttbffn.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "cz.enky.pet",
+            "certificate_hash": "1d0949a5d95587ec9a671a12ab907093d5f710a5"
+          }
+        },
+        {
+          "client_id": "663222435357-cuetamueh48n01tbb6saqnugr0bti3kv.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDyVFu4Ipno3Av-PXWGwcm8cD95umaisbQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "663222435357-cuetamueh48n01tbb6saqnugr0bti3kv.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -81,8 +81,9 @@ export default class SignUp extends Component<ScreenProps, any> {
 			let message = await api.createUser(this.state.name.value, this.state.email.value, this.state.password.value);
 			if (message !== null) {
 				console.log(message);
-				this.setState(() => ({ snackbar: { visible: true, message: message } }));
+				return this.setState(() => ({ snackbar: { visible: true, message: message } }));
 			}
+			await api.loginWithEmailAndPassword(this.state.email.value, this.state.password.value);
 		}
 	}
 
@@ -93,7 +94,8 @@ export default class SignUp extends Component<ScreenProps, any> {
 	render() {
 		return (
 			<Background>
-				<KeyboardAvoidingView style={styles.main} behavior="position">
+			
+				<KeyboardAvoidingView style={styles.main} behavior="position" keyboardVerticalOffset={-220}>
 					<Header>Welcome, new user!</Header>
 					<TextInput
 						ref={(input: any) => (this.ref.name = input)}
@@ -179,10 +181,11 @@ export default class SignUp extends Component<ScreenProps, any> {
 							Already have an account? Sign In
 						</Text>
 					</View>
+				</KeyboardAvoidingView>
+				<View style={styles.snackbar}>
 					<Snackbar
-						style={styles.snackbar}
 						visible={this.state.snackbar.visible}
-						duration={5000}
+						duration={3000}
 						action={{
 							label: "OK",
 						}}
@@ -190,7 +193,7 @@ export default class SignUp extends Component<ScreenProps, any> {
 					>
 						{this.state.snackbar.message}
 					</Snackbar>
-				</KeyboardAvoidingView>
+				</View>
 			</Background>
 		);
 	}
@@ -199,6 +202,8 @@ export default class SignUp extends Component<ScreenProps, any> {
 const styles = StyleSheet.create({
 	main: {
 		paddingTop: "20%",
+		height: Dimensions.get("window").height - getStatusBarHeight(),
+		position: "relative",
 	},
 	row: {
 		display: "flex",
@@ -209,10 +214,8 @@ const styles = StyleSheet.create({
 	input: {},
 	button: {},
 	snackbar: {
-		position: "absolute",
-		bottom: -80,
 		left: -20,
-		width: Dimensions.get("screen").width - 16,
+		width: Dimensions.get("screen").width ,
 	},
 	text: {
 		textAlign: "center",

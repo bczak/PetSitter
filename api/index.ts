@@ -1,3 +1,4 @@
+import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import firebase from "firebase";
 import "firebase/auth";
 import "firebase/firestore";
@@ -19,7 +20,16 @@ const firebaseConfig = {
 const server = "192.168.0.132";
 
 class API {
-	private user: firebase.User | null = null;
+	async getPetsCount(uid: string): Promise<number> {
+		let result = await firebase.functions().httpsCallable("getPetCount")({ id: uid });
+		return result.data;
+	}
+	async getLikeCount(id: string): Promise<number> {
+		let result = await firebase.functions().httpsCallable("getLikeCount")({ id });
+		return result.data;
+	}
+
+	public user: firebase.User | null = null;
 
 	constructor() {
 		if (!firebase.apps.length) {
@@ -67,21 +77,28 @@ class API {
 		return false;
 	}
 
-	async getPet(id: string) {
+	async getPet(id: string): Promise<Pet | null> {
 		let data = await firebase.firestore().collection("pets").doc(id).get();
 		let pet = data.data();
 		if (pet === undefined) return null;
-		if (isValidURL(pet.image)) return pet;
+		if (isValidURL(pet.image)) return pet as Pet;
 		try {
 			pet.image = await this.getImageUrl(pet.image + ".jpg");
+			pet.id = id;
 			pet.otherImages = await Promise.all(pet.otherImages.map((i: string) => this.getImageUrl(i + ".jpg")));
 			pet.liked = await this.getLike(pet.id || "", this.user?.uid || "");
-			return pet;
+			return pet as Pet;
 		} catch (e: any) {
 			// TODO: error handling
-			return pet;
+			return pet as Pet;
 		}
 	}
+
+	async getReviewsStat(id: string) {
+		let result = await firebase.functions().httpsCallable("getReviewsStat")({ id });
+		return result.data;
+	}
+
 	fetchUser(callback: Function) {
 		firebase.auth().onAuthStateChanged((user: firebase.User | null) => {
 			this.user = user;
@@ -101,6 +118,11 @@ class API {
 	async getLike(petId: string, userId: string): Promise<boolean> {
 		let like = await firebase.firestore().collection("/pets").doc(petId).collection("likes").doc(userId).get();
 		return like.exists;
+	}
+
+	async getUser(owner: string) {
+		let data = await firebase.firestore().collection("users").doc(owner).get();
+		return data.data();
 	}
 
 	async getPets(type: string = "all"): Promise<Pet[]> {
@@ -174,19 +196,20 @@ class API {
 		}
 
 		let user = credential.user;
-		fb.auth().signOut();
 		if (user === null) {
 			return "Unknown error";
 		}
 		await firebase
 			.firestore()
 			.collection("users")
-			.add({
+			.doc(user.uid)
+			.set({
 				uid: user.uid,
 				displayName: name,
 				firstname: name.split(" ")[0] || "",
 				lastname: name.split(" ")[1] || "",
 			} as User);
+		await fb.auth().signOut();
 		return null;
 	}
 
@@ -195,6 +218,8 @@ class API {
 			`https://maps.googleapis.com/maps/api/geocode/json?latlng=${coordinated.latitude} ${coordinated.longitude}&key=${googleMapsApi}`
 		);
 		res = await res.json();
+		console.log(res);
+
 		return {
 			/*@ts-ignore*/
 			town: res.results[0].address_components.filter((i) => i.types.includes("sublocality"))[0]?.long_name || null,

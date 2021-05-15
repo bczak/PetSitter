@@ -3,11 +3,16 @@ import {
 	ImageBackground,
 	StyleSheet,
 	KeyboardAvoidingView,
+	Dimensions,
 } from 'react-native';
 
 
+const height = Dimensions.get('screen').height
+
 export default class Background extends Component<any, any> {
 	render() {
+		console.log(height);
+		
 		return (
 			<ImageBackground
 				source={require('../../assets/images/background_dot.png')}
@@ -27,6 +32,7 @@ const styles = StyleSheet.create({
 	background: {
 		flex: 1,
 		width: '100%',
+		height: height,
 		position: 'relative'
 	},
 	container: {

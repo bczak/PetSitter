@@ -57,7 +57,7 @@ class PetBreed extends Component<StepProps, any> {
 	}
 
 	select(size: string) {
-		if (Number(size) || size.length == 0) {
+		if (!isNaN(Number(size)) || size.length == 0) {
 			this.update(undefined, undefined, size);
 		}
 	}
@@ -74,9 +74,9 @@ class PetBreed extends Component<StepProps, any> {
 					onChangeText={(text) => this.typeBreed(text)}
 				/>
 
-				<Text style={styles.title}>Size</Text>
+				<Text style={styles.title}>Weight</Text>
 				<TextInput
-					label={"Size"}
+					label={"Weight"}
 					style={styles.search}
 					value={this.props.data.weight}
 					keyboardType="number-pad"

@@ -4,8 +4,9 @@ import Header from "../components/auth/Header";
 import { Avatar, Button, Divider, Paragraph, Text } from "react-native-paper";
 import { ScreenProps } from "../types";
 import { StyleSheet, View } from "react-native";
-
+import api from "../api";
 export default class AuthHome extends Component<ScreenProps, any> {
+
 	render() {
 		return (
 			<Background>
@@ -29,16 +30,6 @@ export default class AuthHome extends Component<ScreenProps, any> {
 							Sign Up
 						</Button>
 					</View>
-					<Divider style={styles.divider} />
-					<Button
-						icon={"google"}
-						style={styles.google}
-						mode="outlined"
-						color={"white"}
-						onPress={() => console.log("google")}
-					>
-						Google
-					</Button>
 				</View>
 			</Background>
 		);
