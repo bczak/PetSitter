@@ -8,10 +8,19 @@ import ProfileScreen from "../screens/Profile";
 import { createMaterialBottomTabNavigator } from "@react-navigation/material-bottom-tabs";
 import { StyleSheet } from "react-native";
 import Theme from "../constants/Theme";
-
+import api from "../api";
+import { Request } from '../model'
+import { useState } from "react";
 const Tab = createMaterialBottomTabNavigator();
 
 export default function BottomTabNavigator() {
+	let [count, setCount] = useState(0);
+	React.useEffect(() => {
+		
+		api.subscribeForRequests((request: Request[]) => {
+			setCount(request.length)
+		})
+	})
 	return (
 		<Tab.Navigator
 			barStyle={styles.bar}
@@ -35,17 +44,19 @@ export default function BottomTabNavigator() {
 				}}
 			/>
 			<Tab.Screen
-				name="Chat"
+				name="Pets"
 				component={ChatScreen}
 				options={{
-					tabBarIcon: "chat",
+					tabBarIcon: "delta",
 				}}
 			/>
 			<Tab.Screen
-				name="Activity"
+				name="Notifications"
 				component={ActivityScreen}
+
 				options={{
 					tabBarIcon: "bell",
+					tabBarBadge: count > 0 ? count : undefined
 				}}
 			/>
 			<Tab.Screen

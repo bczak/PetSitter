@@ -4,9 +4,8 @@ import "firebase/auth";
 import "firebase/firestore";
 import "firebase/functions";
 import "firebase/storage";
-import { Pet, User } from "../model";
+import { Pet, User, Request, RequestStatus } from "../model";
 import { isValidURL } from "../utils";
-
 const googleMapsApi = "AIzaSyDyVFu4Ipno3Av-PXWGwcm8cD95umaisbQ";
 const firebaseConfig = {
 	apiKey: "AIzaSyB2lJUJ-qpoHP4hx8nDMZ_iWV1pyIUxbJc",
@@ -20,12 +19,169 @@ const firebaseConfig = {
 const server = "192.168.0.132";
 
 class API {
+	async changePassword(password: string) {
+		await this.user?.updatePassword(password)
+	}
+	async changeName(name: string) {
+		await firebase.firestore().collection('users').doc(this.user?.uid).update({displayName: name, firstname: name.split(' ')[0], lastname: name.split(' ')[1]})
+		this.user?.updateProfile({
+			displayName: name
+		})
+	}
+	async getSitterCount(id: string): Promise<number> {
+		return (await firebase.functions().httpsCallable("getSitterCount")({ id })).data;
+	}
+
+	async getMyRequests(): Promise<Request[]> {
+		let data = await firebase
+			.firestore()
+			.collection("requests")
+			.where("requester", "==", this.user?.uid)
+			.orderBy("status")
+			.get();
+		let result: Request[] = await Promise.all(
+			data.docs.map(async (item) => {
+				let request: Request = item.data() as Request;
+				request.petEntity = await this.getPet(request.pet);
+				request.id = item.id;
+				request.requesterEntity = (await this.getUser(request.requester)) || null;
+				request.acceptorEntity = (await this.getUser(request.acceptor)) || null;
+				return request;
+			})
+		);
+		let accepted = result.filter((i) => i.status === "ACCEPTED");
+		accepted.sort((a, b) => +new Date(b.start) - +new Date(a.start));
+		return [
+			...result.filter((i) => i.status === "REQUESTED"),
+			...accepted,
+			...result.filter((i) => i.status === "DECLINED"),
+		];
+	}
+	async decline(request: Request) {
+		if (request.acceptor !== this.user?.uid) return "Error. You cannot accept";
+		if (request.status.toString() !== RequestStatus.REQUESTED.toString()) return "Error. Request is not valid anymore";
+		await firebase.firestore().collection("requests").doc(request.id).update({ status: RequestStatus.DECLINED });
+		let notification = await firebase
+			.firestore()
+			.collection("users")
+			.doc(this.user?.uid)
+			.collection("requests")
+			.where("request", "==", request.id)
+			.get();
+
+		await notification.forEach(async (doc) => doc.ref.delete());
+		return null;
+	}
+	async accept(request: Request) {
+		if (request.acceptor !== this.user?.uid) return "Error. You cannot accept";
+		if (request.status.toString() !== RequestStatus.REQUESTED.toString()) return "Error. Request is not valid anymore";
+		await firebase.firestore().collection("requests").doc(request.id).update({ status: RequestStatus.ACCEPTED });
+		let notification = await firebase
+			.firestore()
+			.collection("users")
+			.doc(this.user?.uid)
+			.collection("requests")
+			.where("request", "==", request.id)
+			.get();
+
+		await notification.forEach(async (doc) => doc.ref.delete());
+		return null;
+	}
+	async getMyPets(): Promise<Pet[]> {
+		let result: firebase.firestore.QuerySnapshot;
+		result = await firebase.firestore().collection("/pets").where("owner", "==", this.user?.uid).get();
+		let pets: Array<Pet> = [];
+		result.forEach((item) => {
+			let data = item.data();
+			let pet = data as Pet;
+			pet.id = item.id;
+			pets.push(pet);
+		});
+		return await Promise.all(
+			pets.map(async (pet: Pet) => {
+				if (isValidURL(pet.image)) return pet;
+				try {
+					pet.image = await this.getImageUrl(pet.image + ".jpg");
+					pet.liked = await this.getLike(pet.id || "", this.user?.uid || "");
+					return pet;
+				} catch (e: any) {
+					// TODO: error handling
+					return pet;
+				}
+			})
+		);
+	}
+	async getRequests() {
+		let data = await firebase
+			.firestore()
+			.collection("requests")
+			.where("status", "==", "REQUESTED")
+			.where("acceptor", "==", this.user?.uid)
+			.get();
+		let result: Request[] = await Promise.all(
+			data.docs.map(async (item) => {
+				let request: Request = item.data() as Request;
+				request.petEntity = await this.getPet(request.pet);
+				request.id = item.id;
+				request.requesterEntity = (await this.getUser(request.requester)) || null;
+				request.acceptorEntity = (await this.getUser(request.acceptor)) || null;
+				return request;
+			})
+		);
+		return result;
+	}
+	async searchPets(type: string, search: string) {
+		let result: firebase.firestore.QuerySnapshot;
+		if (type === "all") {
+			result = await firebase
+				.firestore()
+				.collection("/pets")
+				.orderBy("name")
+				.startAt(search)
+				.endAt(search + "\uf8ff")
+				.get();
+		} else {
+			result = await firebase
+				.firestore()
+				.collection("/pets")
+				.where("type", "==", type)
+				.orderBy("name")
+				.startAt(search)
+				.endAt(search + "\uf8ff")
+				.get();
+		}
+		let pets: Array<Pet> = [];
+		result.forEach((item) => {
+			let data = item.data();
+			let pet = data as Pet;
+			pet.id = item.id;
+			pets.push(pet);
+		});
+		return await Promise.all(
+			pets.map(async (pet: Pet) => {
+				if (isValidURL(pet.image)) return pet;
+				try {
+					pet.image = await this.getImageUrl(pet.image + ".jpg");
+					pet.liked = await this.getLike(pet.id || "", this.user?.uid || "");
+					return pet;
+				} catch (e: any) {
+					// TODO: error handling
+					return pet;
+				}
+			})
+		);
+	}
 	async getPetsCount(uid: string): Promise<number> {
 		let result = await firebase.functions().httpsCallable("getPetCount")({ id: uid });
 		return result.data;
 	}
 	async getLikeCount(id: string): Promise<number> {
 		let result = await firebase.functions().httpsCallable("getLikeCount")({ id });
+		return result.data;
+	}
+
+	async request(request: Request) {
+		let result = await firebase.functions().httpsCallable("request")(request);
 		return result.data;
 	}
 
@@ -77,6 +233,21 @@ class API {
 		return false;
 	}
 
+	async subscribeForRequests(callback: Function) {
+		await firebase
+			.firestore()
+			.collection("users")
+			.doc(this.user?.uid)
+			.collection("requests")
+			.onSnapshot((snapshot) => {
+				let res: Request[] = [];
+				snapshot.forEach((data) => {
+					res.push(data.data() as Request);
+				});
+				callback(res);
+			});
+	}
+
 	async getPet(id: string): Promise<Pet | null> {
 		let data = await firebase.firestore().collection("pets").doc(id).get();
 		let pet = data.data();
@@ -122,7 +293,7 @@ class API {
 
 	async getUser(owner: string) {
 		let data = await firebase.firestore().collection("users").doc(owner).get();
-		return data.data();
+		return data.data() as User;
 	}
 
 	async getPets(type: string = "all"): Promise<Pet[]> {
@@ -214,17 +385,15 @@ class API {
 	}
 
 	async getLocation(coordinated: any) {
-		let res = await fetch(
+		let res: any = await fetch(
 			`https://maps.googleapis.com/maps/api/geocode/json?latlng=${coordinated.latitude} ${coordinated.longitude}&key=${googleMapsApi}`
 		);
-		res = await res.json();
-		console.log(res);
+		res = (await res.json()) as any;
 
 		return {
-			/*@ts-ignore*/
-			town: res.results[0].address_components.filter((i) => i.types.includes("sublocality"))[0]?.long_name || null,
-			/*@ts-ignore*/
-			country: res.results[0].address_components.filter((i) => i.types.includes("country"))[0].long_name,
+			town: res.results[0].address_components.filter((i: any) => i.types.includes("sublocality"))[0]?.long_name || null,
+			country: res.results[0].address_components.filter((i: any) => i.types.includes("country"))[0].long_name,
+			all: res.result[0].formatted_address,
 		};
 	}
 }

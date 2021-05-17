@@ -11,8 +11,6 @@ const height = Dimensions.get('screen').height
 
 export default class Background extends Component<any, any> {
 	render() {
-		console.log(height);
-		
 		return (
 			<ImageBackground
 				source={require('../../assets/images/background_dot.png')}

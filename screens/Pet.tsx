@@ -1,9 +1,9 @@
 import { Component } from "react";
-import { ScrollView } from "react-native-gesture-handler";
+import { ScrollView, Switch } from "react-native-gesture-handler";
 import { ScreenProps } from "../types";
-import { StyleSheet, Text, View, Image, Dimensions } from "react-native";
+import { StyleSheet, Text, View, Image, Dimensions, Picker } from "react-native";
 import * as React from "react";
-import { Appbar, Avatar, Divider, Headline, Menu, Title, Button, Caption, IconButton, List } from "react-native-paper";
+import { Appbar, Avatar, Divider, Headline, Menu, Title, Button, Caption, IconButton, List, ActivityIndicator, Snackbar, Banner } from "react-native-paper";
 import { capitalized, translateIcons } from "../utils";
 import * as model from "../model/";
 import api from "../api";
@@ -11,6 +11,11 @@ import { Loader, MemoizedLoader } from "../components/Loader";
 import Carousel, { getInputRangeFromIndexes, Pagination } from "react-native-snap-carousel";
 import MapView, { Circle } from "react-native-maps";
 import Collapsible from "react-native-collapsible";
+import { DateTime } from 'luxon'
+
+import DateTimePicker from "@react-native-community/datetimepicker";
+import InputDialog from "../components/Dialog";
+import { getStatusBarHeight } from "react-native-status-bar-height";
 const width = Dimensions.get("screen").width;
 const AppBar = ({ back }: { back: Function }) => {
 	const [visible, setVisible] = React.useState(false);
@@ -78,7 +83,7 @@ const Statistics = ({ data }: { data: any }) => {
 const Location = ({ location }: { location: any }) => {
 	return (
 		<View>
-			<MapView style={styles.map} showsCompass={true} region={location} zoomEnabled={false} rotateEnabled={false}>
+			<MapView style={styles.map} pitchEnabled={false} scrollEnabled={false} showsCompass={true} region={location} zoomEnabled={false} rotateEnabled={false}>
 				<Circle
 					center={location}
 					radius={2000}
@@ -95,10 +100,23 @@ export default class Pet extends Component<ScreenProps, any> {
 		pet: null as any,
 		activeSlide: 0,
 		petCount: 0,
+		sitterCount: 0,
 		owner: null as any,
 		likeCount: 0,
 		reviewsStat: {} as any,
-		requesting: true,
+		requesting: false,
+		allDay: false,
+		startTime: new Date(),
+		startDate: new Date(),
+		description: 'Description',
+		duration: '1 Hour',
+		showDatePicker: false,
+		showTimePicker: false,
+		showDescriptionDialog: false,
+		showDurationDialog: false,
+		loading: false,
+		visible: false,
+		message: ''
 	};
 	async componentDidMount() {
 		let id = this.props.route?.params?.pet.id || null;
@@ -112,6 +130,7 @@ export default class Pet extends Component<ScreenProps, any> {
 		let owner: any = null,
 			petCount = 0,
 			likeCount = 0,
+			sitterCount = 0,
 			reviewsStat = {};
 		if (pet.owner) {
 			owner = await api.getUser(pet.owner);
@@ -119,9 +138,10 @@ export default class Pet extends Component<ScreenProps, any> {
 		}
 		if (pet.id) {
 			likeCount = await api.getLikeCount(pet.id);
+			sitterCount = await api.getSitterCount(pet.id);
 			reviewsStat = await api.getReviewsStat(pet.id);
 		}
-		this.setState(() => ({ pet, owner, petCount, likeCount, reviewsStat }));
+		this.setState(() => ({ pet, owner, petCount, likeCount, reviewsStat, sitterCount }));
 	}
 
 	renderImage(item: any, index: number) {
@@ -132,15 +152,58 @@ export default class Pet extends Component<ScreenProps, any> {
 		);
 	}
 
-	async addImage() {}
+	async addImage() { }
 
 	async request() {
 		this.setState(() => ({ requesting: true }));
-		console.log("request");
+	}
+
+	async finish() {
+		this.setState(() => ({ loading: true }))
+		let formattedTime = DateTime.fromJSDate(this.state.startDate).toISODate() + 'T' + (this.state.allDay ? '00:00:00.000Z' : DateTime.fromJSDate(this.state.startTime).toISOTime())
+		let start = DateTime.fromISO(formattedTime).toJSDate().toISOString()
+
+		let request = {
+			start: start,
+			duration: this.state.allDay ? 24 : Number(this.state.duration.split(' ')[0]),
+			note: this.state.description,
+			pet: this.state.pet.id,
+			requester: api.user?.uid || '',
+			acceptor: this.state.owner?.uid || ''
+		} as model.Request
+
+		let data = await api.request(request)
+		let message = 'Request has successfully been send. Wait for response!'
+		if (!data) {
+			message = "There was a problem sending your request. Please try again later!"
+		}
+		this.setState(() => ({ loading: false, visible: true, message, requesting: false }))
+	}
+
+	toggleDay() {
+		let duration = '1 Day'
+		if (this.state.allDay) {
+			duration = '1 Hour'
+		}
+		this.setState(() => ({ allDay: !this.state.allDay, duration }))
 	}
 
 	async edit() {
 		console.log("edit");
+	}
+	changeTime() {
+		this.setState(() => ({ showDatePicker: true, showTimePicker: false }))
+	}
+
+	onConfirmDate(date: any) {
+		if (date.nativeEvent.timestamp) {
+			this.setState(() => ({ startDate: new Date(date.nativeEvent.timestamp), showDatePicker: false, showTimePicker: true }));
+		}
+	}
+	onConfirmTime(date: any) {
+		if (date.nativeEvent.timestamp) {
+			this.setState(() => ({ startTime: new Date(date.nativeEvent.timestamp), showDatePicker: false, showTimePicker: false }));
+		}
 	}
 	render() {
 		const data = [
@@ -151,10 +214,9 @@ export default class Pet extends Component<ScreenProps, any> {
 				caption: `${this.state.reviewsStat.count} reviews`,
 			},
 			{ color: "#ed4337", icon: "heart", text: this.state.likeCount, caption: "Favorites" },
-			{ color: "black", icon: "paw", text: "17", caption: "Sitters" },
+			{ color: "black", icon: "paw", text: this.state.sitterCount, caption: "Sitters" },
 		];
 		let ownerRating = [
-			{ color: "#d4af37", icon: "star", text: "4.7", caption: "4 reviews" },
 			{ color: "black", icon: "paw", text: this.state.petCount, caption: "Pets" },
 		];
 		const meOwner = api.user?.uid === this.state.owner?.uid;
@@ -164,19 +226,68 @@ export default class Pet extends Component<ScreenProps, any> {
 			latitudeDelta: 0.03,
 			longitudeDelta: 0.03,
 		};
+
 		return this.state.pet !== null ? (
 			<ScrollView style={styles.container}>
 				<AppBar back={() => this.props.navigation.goBack()} />
+				<Snackbar
+					onDismiss={() => this.setState(() => ({ visible: false }))}
+					visible={this.state.visible}
+					duration={3000}
+					wrapperStyle={{ position: 'absolute', top: getStatusBarHeight() + 56 }}
+					action={{ label: 'OK', onPress: () => this.setState(() => ({ visible: false })) }}>
+					{this.state.message}
+				</Snackbar>
+				{this.state.showDatePicker && <DateTimePicker
+					value={this.state.startTime}
+					mode={"date"}
+					is24Hour={true}
+					display="calendar"
+					onChange={(date: any) => this.onConfirmDate(date)}
+				/>}
+
+				{this.state.showTimePicker && <DateTimePicker
+					value={this.state.startTime}
+					mode={"time"}
+					is24Hour={true}
+					onChange={(date: any) => this.onConfirmTime(date)}
+				/>}
+				{this.state.showDescriptionDialog && <InputDialog
+					label="Description"
+					type='default'
+					input={this.state.description}
+					text={(text: string) => this.setState(() => ({ description: text }))}
+					hide={() => this.setState(() => ({ showDescriptionDialog: false }))} />}
+				{this.state.showDurationDialog && <InputDialog
+					label="Duration in Hours"
+					type='number-pad'
+					input={this.state.duration}
+					text={(text: string) => this.setState(() => ({ duration: text.split(' ')[0] + ' Hours' }))}
+					hide={() => this.setState(() => ({ showDurationDialog: false }))} />}
 				<Description pet={this.state.pet} />
 				<Statistics data={data} />
 				<Collapsible collapsed={!this.state.requesting}>
 					<Divider />
 					<View style={styles.collapsed}>
 						<List.Section>
-							<List.Item title="All-day" left={() => <List.Icon icon="clock" />} />
-							<List.Item title="First Item" left={() => <List.Icon icon="clock" />} />
-							<List.Item title="First Item" left={() => <List.Icon icon="clock" />} />
-							<List.Item title="First Item" left={() => <List.Icon icon="clock" />} />
+							<List.Item title="All-day"
+								left={() => <List.Icon icon="calendar-today" />}
+								right={() => (<Switch value={this.state.allDay} onValueChange={() => this.toggleDay()} />)}
+							/>
+							<List.Item
+								onPress={() => this.changeTime()}
+								title={DateTime.fromJSDate(this.state.startDate).toFormat('DDDD') + ' ' + DateTime.fromJSDate(this.state.startTime).toFormat('T')}
+								left={() => <List.Icon icon="clock" />}
+							/>
+							<List.Item
+								titleStyle={{ color: this.state.allDay ? 'gray' : 'black' }}
+								title={this.state.duration}
+								onPress={() => this.setState(() => ({ showDurationDialog: !this.state.allDay }))}
+								left={() => <List.Icon icon="timer-sand" color={this.state.allDay ? 'gray' : 'black'} />} />
+							<List.Item
+								title={this.state.description}
+								onPress={() => this.setState(() => ({ showDescriptionDialog: true }))}
+								left={() => <List.Icon icon="note" />} />
 						</List.Section>
 					</View>
 				</Collapsible>
@@ -189,7 +300,7 @@ export default class Pet extends Component<ScreenProps, any> {
 						<Button mode="outlined" style={styles.book} onPress={() => this.setState(() => ({ requesting: false }))}>
 							Cancel
 						</Button>
-						<Button mode="contained" style={styles.book} onPress={() => this.request()}>
+						<Button mode="contained" style={styles.book} icon='calendar-check' loading={this.state.loading} onPress={() => this.finish()}>
 							Request
 						</Button>
 					</View>
@@ -198,7 +309,7 @@ export default class Pet extends Component<ScreenProps, any> {
 						Request a walk
 					</Button>
 				)}
-				<Location location={location} />
+				{location && location.latitude && location.longitude && <Location location={location} />}
 				<Divider />
 				<View style={styles.title}>
 					<Headline style={styles.headline}>Photos</Headline>
@@ -208,38 +319,46 @@ export default class Pet extends Component<ScreenProps, any> {
 						</Button>
 					)}
 				</View>
-				<Carousel
-					layout="stack"
-					containerCustomStyle={styles.carousel}
-					sliderWidth={width}
-					itemWidth={width}
-					data={this.state.pet.otherImages}
-					renderItem={(data: { item: any; index: number }) => this.renderImage(data.item, data.index)}
-					pagingEnabled
-					onSnapToItem={(index) => this.setState({ activeSlide: index })}
-				/>
-				<Pagination
-					dotsLength={this.state.pet.otherImages.length}
-					activeDotIndex={this.state.activeSlide}
-					dotStyle={{
-						width: 10,
-						height: 10,
-						borderRadius: 5,
-						marginHorizontal: 8,
-						backgroundColor: "rgba(0,0,0,0.5)",
-					}}
-					containerStyle={{ top: -20 }}
-					inactiveDotOpacity={0.4}
-					inactiveDotScale={0.6}
-				/>
-				<Divider />
-				<Headline style={styles.headline}>Owner</Headline>
-				<Owner owner={this.state.owner} />
-				<Statistics data={ownerRating} />
+				{(this.state.pet.otherImages || []).length > 0 && <>
+
+					<Carousel
+						layout="tinder"
+						containerCustomStyle={styles.carousel}
+						sliderWidth={width}
+						itemWidth={width}
+						data={this.state.pet.otherImages}
+						renderItem={(data: { item: any; index: number }) => this.renderImage(data.item, data.index)}
+						pagingEnabled
+						onSnapToItem={(index) => this.setState({ activeSlide: index })}
+					/>
+					<Pagination
+						dotsLength={this.state.pet.otherImages?.length || 0}
+						activeDotIndex={this.state.activeSlide}
+						dotStyle={{
+							width: 10,
+							height: 10,
+							borderRadius: 5,
+							marginHorizontal: 8,
+							backgroundColor: "rgba(0,0,0,0.5)",
+						}}
+						containerStyle={{ top: -20 }}
+						inactiveDotOpacity={0.4}
+						inactiveDotScale={0.6}
+					/>
+				</>}
+				{this.state.owner && (<><Divider />
+					<Headline style={styles.headline}>Owner</Headline>
+					<Owner owner={this.state.owner} />
+					<Statistics data={ownerRating} /></>)}
 			</ScrollView>
 		) : (
-			<MemoizedLoader />
+			<View style={styles.indicator}>
+				<ActivityIndicator size='large' />
+			</View>
 		);
+	}
+	onDismissSnackBar(): void {
+		throw new Error("Method not implemented.");
 	}
 }
 
@@ -292,6 +411,10 @@ const styles = StyleSheet.create({
 		width: 75,
 		height: 75,
 		borderRadius: 12,
+	},
+	indicator: {
+		flex: 1,
+		paddingTop: Dimensions.get('screen').height / 2 - 50
 	},
 	group: {
 		flex: 1,

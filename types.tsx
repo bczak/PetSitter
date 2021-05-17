@@ -6,6 +6,14 @@ export type RootStackParamList = {
 	AddPet: undefined
 };
 
+export const defaultChips = [
+	{ id: "all", text: "All", selected: true, icon: "paw" } as ChipModel,
+	{ id: "dogs", text: "Dogs", selected: false, icon: "dog" } as ChipModel,
+	{ id: "cats", text: "Cats", selected: false, icon: "cat" } as ChipModel,
+	{ id: "rodents", text: "Rodents", selected: false, icon: "rodent" } as ChipModel,
+	{ id: "birds", text: "Birds", selected: false, icon: "food-drumstick" } as ChipModel,
+	{ id: "fishes", text: "Fishes", selected: false, icon: "fish" } as ChipModel,
+];
 export type AuthStackParamList = {
 	SignInScreen: undefined;
 	SignUpScreen: undefined;

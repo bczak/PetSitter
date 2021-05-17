@@ -42,7 +42,6 @@ export default class AddPet extends Component<ScreenProps, any> {
 	}
 
 	prevStep() {
-		console.log(this.state.activeStep);
 		if (this.state.activeStep == 0) {
 			this.props.navigation.goBack();
 		} else {
@@ -72,7 +71,7 @@ export default class AddPet extends Component<ScreenProps, any> {
 				await api.addPet(pet);
 				this.props.navigation.navigate("Home", { refresh: Date.now() + 1000 });
 			} catch (e) {
-				console.log(e.message);
+				console.error(e.message);
 			}
 		} else {
 			this.setState(() => ({ activeStep: this.state.activeStep + 1, nextStepAvailable: false }));

@@ -26,11 +26,8 @@ export default class SignIn extends Component<ScreenProps, any> {
 			return;
 		}
 		let status = await firebase.loginWithEmailAndPassword(this.state.email.value, this.state.password.value);
-		console.log(status);
 		if (status) {
 			this.setState(() => ({ snackbar: true, message: status }));
-		} else {
-			console.log("good");
 		}
 		// this.props.navigation.navigate('AuthHomeScreen');
 	}

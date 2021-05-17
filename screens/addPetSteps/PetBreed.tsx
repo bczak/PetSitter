@@ -17,7 +17,6 @@ class PetBreed extends Component<StepProps, any> {
 	};
 
 	componentDidMount() {
-		console.log(this.props.data.birthday);
 		this.update();
 	}
 
@@ -42,7 +41,6 @@ class PetBreed extends Component<StepProps, any> {
 	}
 
 	componentDidUpdate(prevProps: Readonly<StepProps>, prevState: Readonly<any>, snapshot?: any) {
-		console.log(this.props.data.birthday, prevProps.data.birthday);
 
 		if (this.state.dateModal) {
 			this.setState(() => ({ dateModal: false }));
@@ -50,7 +48,6 @@ class PetBreed extends Component<StepProps, any> {
 	}
 
 	onConfirm(date: any) {
-		console.log(date.nativeEvent.timestamp);
 		if (date.nativeEvent.timestamp) {
 			this.update(undefined, new Date(date.nativeEvent.timestamp));
 		}

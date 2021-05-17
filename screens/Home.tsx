@@ -13,7 +13,7 @@ import {
 } from "react-native";
 
 import { Appbar, Avatar, Card, FAB, Headline, Text } from "react-native-paper";
-import { ChipModel, ScreenProps } from "../types";
+import { ChipModel, defaultChips, ScreenProps } from "../types";
 import PetCard from "../components/pet/PetCard";
 import { Pet } from "../model";
 import firebase from "../api";
@@ -22,14 +22,6 @@ import { getStatusBarHeight } from "react-native-status-bar-height";
 import { translateTypes } from "../utils";
 import { MemoizedLoader } from "../components/Loader";
 
-const defaultChips = [
-	{ id: "all", text: "All", selected: true, icon: "paw" } as ChipModel,
-	{ id: "dogs", text: "Dogs", selected: false, icon: "dog" } as ChipModel,
-	{ id: "cats", text: "Cats", selected: false, icon: "cat" } as ChipModel,
-	{ id: "rodents", text: "Rodents", selected: false, icon: "rodent" } as ChipModel,
-	{ id: "birds", text: "Birds", selected: false, icon: "food-drumstick" } as ChipModel,
-	{ id: "fishes", text: "Fishes", selected: false, icon: "fish" } as ChipModel,
-];
 
 const EmptyCard = () => (
 	<View style={styles.emptyCard}>
@@ -99,7 +91,6 @@ export default class HomeScreen extends Component<ScreenProps, any> {
 			<View style={styles.container}>
 				<Appbar.Header style={styles.header}>
 					<Appbar.Content title="Pet Sitter" />
-					<Appbar.Action icon={"filter-variant"} />
 				</Appbar.Header>
 
 				<FlatList

@@ -65,7 +65,6 @@ export default class PetPhotos extends Component<StepProps, any> {
 			aspect: [1, 1],
 			quality: 0.3,
 		});
-		console.log(result);
 		if (!result.cancelled) {
 			this.props.onData({ photos: [...this.props.data.photos, result.uri] });
 		}
@@ -129,7 +128,7 @@ const styles = StyleSheet.create({
 	},
 	indicator: {
 		position: "absolute",
-		top: 350 - 12,
+		top: Dimensions.get('screen').width - 50,
 		right: 16,
 		zIndex: 999,
 		backgroundColor: "white",

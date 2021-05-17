@@ -80,7 +80,6 @@ export default class SignUp extends Component<ScreenProps, any> {
 			this.blur();
 			let message = await api.createUser(this.state.name.value, this.state.email.value, this.state.password.value);
 			if (message !== null) {
-				console.log(message);
 				return this.setState(() => ({ snackbar: { visible: true, message: message } }));
 			}
 			await api.loginWithEmailAndPassword(this.state.email.value, this.state.password.value);

@@ -19,7 +19,6 @@ exports.like = functions.https.onCall(async (data, context) => {
 	let ref = admin.firestore().collection("pets").doc(data.petId).collection("likes").doc(context.auth.uid);
 	let like = await ref.get();
 	if (like.exists) {
-		console.log(like.data());
 		return { success: like.data().timestamp._seconds };
 	} else {
 		let timestamp = new Date();
@@ -53,17 +52,26 @@ exports.dislike = functions.https.onCall(async (data, context) => {
 });
 
 exports.fakeData = functions.https.onRequest((req, res) => {
+	admin.firestore().collection("users").doc("user1").set({
+		uid: "user1",
+		displayName: "Jon Snow",
+		firstname: "Jon",
+		lastname: "Snow",
+	});
 	admin
 		.firestore()
 		.collection("pets")
 		.add({
 			name: "Arnold",
 			type: "dog",
-			owner: "user1",
 			image: "n02104029_3493",
+			other_images: ["1620744592182", "1621025821532"],
+			owner: "user1",
 			location: {
 				town: "Praha",
 				country: "cz",
+				lt: 51.5,
+				lg: 12.6,
 			},
 		})
 		.then((r) => undefined);
@@ -73,11 +81,14 @@ exports.fakeData = functions.https.onRequest((req, res) => {
 		.add({
 			name: "Batman",
 			type: "cat",
-			owner: "user2",
+			other_images: ["1620744592182", "1621025821532"],
 			image: "n02104365_8706",
+			owner: "user1",
 			location: {
 				town: "Praha",
 				country: "cz",
+				lt: 51.5,
+				lg: 12.6,
 			},
 		})
 		.then((r) => undefined);
@@ -87,11 +98,14 @@ exports.fakeData = functions.https.onRequest((req, res) => {
 		.add({
 			name: "TukTuk",
 			type: "bird",
-			owner: "user4",
 			image: "n02104029_3493",
+			other_images: ["1620744592182", "1621025821532"],
+			owner: "user1",
 			location: {
 				town: "Praha",
 				country: "cz",
+				lt: 51.5,
+				lg: 12.6,
 			},
 		})
 		.then((r) => undefined);
@@ -100,7 +114,7 @@ exports.fakeData = functions.https.onRequest((req, res) => {
 
 exports.addPet = functions.https.onCall(async (data, context) => {
 	if (context.auth === null) return;
-	pet.owner = context.auth.uid;
+	data.owner = context.auth.uid;
 	let pet = await admin.firestore().collection("pets").add(data);
 	return pet.id;
 });
@@ -120,9 +134,32 @@ exports.getLikeCount = functions.https.onCall(async (data, context) => {
 exports.getReviewsStat = functions.https.onCall(async (data, context) => {
 	if (context.auth === null) return;
 	let id = data.id;
-	let res = await admin.firestore().collection("pets").doc(id).collection('reviews').get();
+	let res = await admin.firestore().collection("pets").doc(id).collection("reviews").get();
 	let avg = 0;
-	res.forEach((i) => avg += i.rating)
-	if(res.size === 0) return {count: 0, avg: '?'}
-	return {count: res.size, avg: avg / res.size};
+	res.forEach((i) => (avg += i.rating));
+	if (res.size === 0) return { count: 0, avg: "?" };
+	return { count: res.size, avg: avg / res.size };
+});
+
+exports.request = functions.https.onCall(async (data, context) => {
+	if (context.auth === null) return null;
+	if (context.auth.uid !== data.requester) return null;
+	data.status = "REQUESTED";
+	let result = await admin.firestore().collection("requests").add(data);
+	let ref = admin.firestore().collection("users").doc(data.acceptor).collection("requests");
+	await ref.add({ request: result.id });
+	return result.id;
+});
+
+exports.getSitterCount = functions.https.onCall(async (data, context) => {
+	if (context.auth === null) return;
+	let id = data.id;
+	let requests = await admin
+		.firestore()
+		.collection("requests")
+		.where("status", "==", "ACCEPTED")
+		.where("start", "<=", new Date().toISOString())
+		.where("pet", "==", id)
+		.get();
+	return requests.size;
 });

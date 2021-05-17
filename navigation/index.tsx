@@ -6,6 +6,7 @@ import NotFoundScreen from "../screens/NotFoundScreen";
 import BottomTabNavigator from "./BottomTabNavigator";
 import AddPet from "../screens/AddPet";
 import Pet from "../screens/Pet";
+import Reviews from "../screens/Reviews";
 
 export default function Navigation() {
 	return (
@@ -22,6 +23,7 @@ function RootNavigator() {
 			<Stack.Screen name="App" component={BottomTabNavigator} />
 			<Stack.Screen name="AddPet" component={AddPet} />
 			<Stack.Screen name="Pet" component={Pet} />
+			<Stack.Screen name="Reviews" component={Reviews} />
 			<Stack.Screen name="NotFound" component={NotFoundScreen} options={{ title: "Oops!" }} />
 		</Stack.Navigator>
 	);

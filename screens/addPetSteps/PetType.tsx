@@ -15,7 +15,7 @@ import { Avatar, Card, IconButton, TextInput } from "react-native-paper";
 export default class PetType extends Component<StepProps, any> {
 	state = {
 		type: "",
-		selected: "",
+		selected: "dog",
 		name: "",
 		other: false,
 	};
@@ -42,8 +42,8 @@ export default class PetType extends Component<StepProps, any> {
 	}
 
 	componentDidMount() {
-		this.update(this.props.data.name, this.props.data.type);
-		this.setState(() => ({ type: this.props.data.type, name: this.props.data.name }));
+		this.update(this.props.data.name, 'dog');
+		this.setState(() => ({ type: 'dog', name: this.props.data.name }));
 	}
 
 	selectType(type: string) {
@@ -85,13 +85,12 @@ export default class PetType extends Component<StepProps, any> {
 	}
 
 	update(name: string, type: string) {
-		console.log(name, type);
 
 		this.props.onData({ name, type });
 	}
 
 	render() {
-		
+
 		return (
 			<SafeAreaView style={styles.container}>
 				<KeyboardAvoidingView>

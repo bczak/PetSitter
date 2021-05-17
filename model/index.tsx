@@ -11,6 +11,7 @@ export interface Location {
 	lt?: number;
 	lg?: number;
 	radius?: number;
+	all: string
 }
 
 export interface Pet {
@@ -26,17 +27,21 @@ export interface Pet {
 	breed?: string;
 }
 
-export enum BookType {
-	WALK,
-	CARE,
+export enum RequestStatus {
+	REQUESTED = 'REQUESTED', DECLINED = 'DECLINED', ACCEPTED = 'ACCEPTED', DONE = 'DONE'
 }
-
-export interface Book {
-	type: BookType;
-	start: Date;
-	date: Date;
+export interface Request {
+	start: string;
+	id?: string;
+	duration: number;
+	note: string;
 	pet: string;
-	requestor: string;
+	requester: string;
+	acceptor: string;
+	status: RequestStatus,
+	petEntity?: Pet | null,
+	requesterEntity?: User | null
+	acceptorEntity?: User | null
 }
 
 export interface Review {
