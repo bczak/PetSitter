@@ -434,13 +434,14 @@ class API {
 			res.docs.map(async (i) => {
 				let review = (await i.data()) as Review;
 				review.authorEntity = await api.getUser(review.author);
+				review.created = new Date((await i.data()).created.seconds * 1000)
 				return review;
 			})
 		);
 	}
 
-	async addReview(text: string, rating: number) {
-		
+	async addReview(text: string, rating: number, pet: string) {
+		await firebase.functions().httpsCallable("addReview")({ text, rating, pet });
 	}
 
 	async getLocation(coordinated: any) {

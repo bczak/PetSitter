@@ -72,6 +72,7 @@ exports.fakeData = functions.https.onRequest((req, res) => {
 				country: "cz",
 				lt: 51.5,
 				lg: 12.6,
+				all: "Technicka 2, Praha-dejvice, 16000",
 			},
 		})
 		.then((r) => undefined);
@@ -89,6 +90,7 @@ exports.fakeData = functions.https.onRequest((req, res) => {
 				country: "cz",
 				lt: 51.5,
 				lg: 12.6,
+				all: "Technicka 2, Praha-dejvice, 16000",
 			},
 		})
 		.then((r) => undefined);
@@ -106,6 +108,7 @@ exports.fakeData = functions.https.onRequest((req, res) => {
 				country: "cz",
 				lt: 51.5,
 				lg: 12.6,
+				all: "Technicka 2, Praha-dejvice, 16000",
 			},
 		})
 		.then((r) => undefined);
@@ -136,7 +139,7 @@ exports.getReviewsStat = functions.https.onCall(async (data, context) => {
 	let id = data.id;
 	let res = await admin.firestore().collection("pets").doc(id).collection("reviews").get();
 	let avg = 0;
-	res.forEach((i) => (avg += i.rating));
+	res.forEach((i) => (avg += i.data().rating));
 	if (res.size === 0) return { count: 0, avg: "?" };
 	return { count: res.size, avg: avg / res.size };
 });
@@ -165,5 +168,12 @@ exports.getSitterCount = functions.https.onCall(async (data, context) => {
 });
 
 exports.addReview = functions.https.onCall(async (data, context) => {
-	
+	const review = {
+		text: data.text,
+		rating: data.rating,
+		created: new Date(),
+		author: context.auth.uid,
+	};
+
+	await admin.firestore().collection("pets").doc(data.pet).collection("reviews").add(review);
 });

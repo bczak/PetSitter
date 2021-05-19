@@ -71,7 +71,7 @@ const Statistics = ({ data }: { data: any }) => {
 		<View style={styles.statistics}>
 			{data.map((item: any) => (
 				<View style={styles.item} key={JSON.stringify(item)}>
-					<Button labelStyle={styles.itemButton} color={item.color} icon={item.icon}>
+					<Button labelStyle={styles.itemButton} color={item.color} icon={item.icon} onPress={() => item.onPress()}>
 						{item.text}
 					</Button>
 					<Caption style={styles.itemCaption}>{item.caption}</Caption>
@@ -247,8 +247,9 @@ export default class Pet extends Component<ScreenProps, any> {
 			{
 				color: "#d4af37",
 				icon: "star",
-				text: this.state.reviewsStat.avg,
+				text: parseFloat(this.state.reviewsStat.avg).toFixed(1),
 				caption: `${this.state.reviewsStat.count} reviews`,
+				onPress: () => this.props.navigation.navigate('Reviews', { id: this.state.pet.id })
 			},
 			{ color: "#ed4337", icon: "heart", text: this.state.likeCount, caption: "Favorites" },
 			{ color: "black", icon: "paw", text: this.state.sitterCount, caption: "Sitters" },
@@ -364,6 +365,7 @@ export default class Pet extends Component<ScreenProps, any> {
 						</Button>
 					)}
 				</View>
+				{(this.state.pet.otherImages || []).length == 0 && <Text style={{margin: 20}}>No photos available</Text>}
 				{(this.state.pet.otherImages || []).length > 0 && <>
 
 					<Carousel
@@ -371,6 +373,7 @@ export default class Pet extends Component<ScreenProps, any> {
 						containerCustomStyle={styles.carousel}
 						sliderWidth={width}
 						itemWidth={width}
+						ListEmptyComponent={<Text>No photos available</Text>}
 						data={this.state.pet.otherImages}
 						renderItem={(data: { item: any; index: number }) => this.renderImage(data.item, data.index)}
 						pagingEnabled
