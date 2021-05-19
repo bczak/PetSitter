@@ -34,6 +34,7 @@ export default function ProfileScreen(props: ScreenProps) {
 			<Snackbar visible={snackbar.length > 0} style={styles.snackbar} onDismiss={() => setSnackbar('')}>{snackbar}</Snackbar>
 			<Appbar.Header style={styles.header}>
 				<Appbar.Content title="Profile Settings" />
+				<Appbar.Action icon='logout' onPress={() =>api.logout()} />
 			</Appbar.Header>
 			<View style={styles.descriptionOwner}>
 				<TextInput style={styles.input} mode='outlined' label='Name' placeholder='First and last name' value={owner.displayName}

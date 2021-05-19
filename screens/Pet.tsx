@@ -3,7 +3,7 @@ import { ScrollView, Switch } from "react-native-gesture-handler";
 import { ScreenProps } from "../types";
 import { StyleSheet, Text, View, Image, Dimensions, Picker } from "react-native";
 import * as React from "react";
-import { Appbar, Avatar, Divider, Headline, Menu, Title, Button, Caption, IconButton, List, ActivityIndicator, Snackbar, Banner } from "react-native-paper";
+import { Appbar, Avatar, Divider, Headline, Menu, Title, Button, Caption, IconButton, List, ActivityIndicator, Snackbar, Banner, Dialog, Portal, Paragraph } from "react-native-paper";
 import { capitalized, translateIcons } from "../utils";
 import * as model from "../model/";
 import api from "../api";
@@ -12,6 +12,7 @@ import Carousel, { getInputRangeFromIndexes, Pagination } from "react-native-sna
 import MapView, { Circle } from "react-native-maps";
 import Collapsible from "react-native-collapsible";
 import { DateTime } from 'luxon'
+import * as ImagePicker from "expo-image-picker";
 
 import DateTimePicker from "@react-native-community/datetimepicker";
 import InputDialog from "../components/Dialog";
@@ -116,8 +117,45 @@ export default class Pet extends Component<ScreenProps, any> {
 		showDurationDialog: false,
 		loading: false,
 		visible: false,
-		message: ''
+		message: '',
+		addImageDialog: false,
+		update: new Date()
 	};
+
+	async loadCamera() {
+		this.showDialog(false)
+
+		let result = await ImagePicker.launchCameraAsync({
+			mediaTypes: ImagePicker.MediaTypeOptions.Images,
+			allowsEditing: true,
+			aspect: [1, 1],
+			quality: 0.3,
+		});
+		if (!result.cancelled) {
+			await api.uploadPhoto(result.uri, this.state.pet.id)
+			let pet = await api.getPet(this.state.pet.id)
+			this.setState(() => ({ pet: pet }))
+		}
+	}
+
+	async loadGallery() {
+		this.showDialog(false)
+
+		let result = await ImagePicker.launchImageLibraryAsync({
+			mediaTypes: ImagePicker.MediaTypeOptions.Images,
+			allowsEditing: true,
+			aspect: [1, 1],
+			quality: 0.3,
+		});
+		if (!result.cancelled) {
+			await api.uploadPhoto(result.uri, this.state.pet.id)
+			let pet = await api.getPet(this.state.pet.id)
+			this.setState(() => ({ pet: pet }))
+		}
+	}
+	showDialog(show: boolean) {
+		this.setState(() => ({ addImageDialog: show }))
+	}
 	async componentDidMount() {
 		let id = this.props.route?.params?.pet.id || null;
 		if (id === null) {
@@ -152,7 +190,9 @@ export default class Pet extends Component<ScreenProps, any> {
 		);
 	}
 
-	async addImage() { }
+	async addImage() {
+		this.showDialog(true)
+	}
 
 	async request() {
 		this.setState(() => ({ requesting: true }));
@@ -188,9 +228,6 @@ export default class Pet extends Component<ScreenProps, any> {
 		this.setState(() => ({ allDay: !this.state.allDay, duration }))
 	}
 
-	async edit() {
-		console.log("edit");
-	}
 	changeTime() {
 		this.setState(() => ({ showDatePicker: true, showTimePicker: false }))
 	}
@@ -245,6 +282,18 @@ export default class Pet extends Component<ScreenProps, any> {
 					display="calendar"
 					onChange={(date: any) => this.onConfirmDate(date)}
 				/>}
+				<Portal>
+					<Dialog visible={this.state.addImageDialog} onDismiss={() => this.showDialog(false)}>
+						<Dialog.Title>Add new photo</Dialog.Title>
+						<Dialog.Content>
+							<Text>Select the source</Text>
+						</Dialog.Content>
+						<Dialog.Actions>
+							<Button onPress={() => { this.loadCamera() }}>Camera</Button>
+							<Button onPress={() => { this.loadGallery() }}>Gallery</Button>
+						</Dialog.Actions>
+					</Dialog>
+				</Portal>
 
 				{this.state.showTimePicker && <DateTimePicker
 					value={this.state.startTime}
@@ -291,11 +340,7 @@ export default class Pet extends Component<ScreenProps, any> {
 						</List.Section>
 					</View>
 				</Collapsible>
-				{meOwner ? (
-					<Button mode="outlined" style={styles.book} onPress={() => this.edit()}>
-						Edit
-					</Button>
-				) : this.state.requesting ? (
+				{(!meOwner) && (this.state.requesting ? (
 					<View style={styles.group}>
 						<Button mode="outlined" style={styles.book} onPress={() => this.setState(() => ({ requesting: false }))}>
 							Cancel
@@ -308,7 +353,7 @@ export default class Pet extends Component<ScreenProps, any> {
 					<Button mode="contained" style={styles.book} onPress={() => this.request()}>
 						Request a walk
 					</Button>
-				)}
+				))}
 				{location && location.latitude && location.longitude && <Location location={location} />}
 				<Divider />
 				<View style={styles.title}>
@@ -322,7 +367,7 @@ export default class Pet extends Component<ScreenProps, any> {
 				{(this.state.pet.otherImages || []).length > 0 && <>
 
 					<Carousel
-						layout="tinder"
+						layout="default"
 						containerCustomStyle={styles.carousel}
 						sliderWidth={width}
 						itemWidth={width}

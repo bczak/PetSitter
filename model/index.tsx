@@ -49,4 +49,5 @@ export interface Review {
 	rating: number;
 	created: Date;
 	author: string;
+	authorEntity: User
 }

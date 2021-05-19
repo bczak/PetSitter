@@ -3,7 +3,6 @@ import { Dimensions, KeyboardAvoidingView, StyleSheet, Text, View } from "react-
 import Background from "../components/auth/Background";
 import { Button, HelperText, Snackbar, TextInput } from "react-native-paper";
 import Header from "../components/auth/Header";
-import BackButton from "../components/auth/BackButton";
 import { ScreenProps } from "../types";
 import { emailValidator, passwordValidator } from "../utils";
 import firebase from "../api";
@@ -72,9 +71,6 @@ export default class SignIn extends Component<ScreenProps, any> {
 					<HelperText type="error" visible={this.state.password.error.length > 0}>
 						{this.state.password.error}
 					</HelperText>
-					<Text onPress={() => this.props.navigation.navigate("ForgotPasswordScreen")} style={styles.label}>
-						Forgot your password?
-					</Text>
 					<Button mode="contained" style={styles.button} onPress={() => this._onLoginPressed()}>
 						Login
 					</Button>

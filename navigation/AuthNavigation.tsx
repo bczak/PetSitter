@@ -6,7 +6,6 @@ import {createStackNavigator} from "@react-navigation/stack";
 import {AuthStackParamList} from "../types";
 import SignUp from "../screens/SignUp";
 import SignIn from "../screens/SignIn";
-import ForgotPassword from "../screens/ForgotPassword";
 import AuthHome from "../screens/AuthHome";
 
 export default class AuthNavigation extends Component {
@@ -29,7 +28,6 @@ function AuthNavigator() {
 			<Stack.Screen name="AuthHomeScreen" component={AuthHome} />
 			<Stack.Screen name="SignUpScreen" component={SignUp}/>
 			<Stack.Screen name="SignInScreen" component={SignIn}/>
-			<Stack.Screen name="ForgotPasswordScreen" component={ForgotPassword}/>
 			<Stack.Screen name="NotFound" component={NotFoundScreen} options={{title: 'Oops!'}}/>
 		</Stack.Navigator>
 	);

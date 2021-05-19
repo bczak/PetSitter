@@ -163,3 +163,7 @@ exports.getSitterCount = functions.https.onCall(async (data, context) => {
 		.get();
 	return requests.size;
 });
+
+exports.addReview = functions.https.onCall(async (data, context) => {
+	
+});

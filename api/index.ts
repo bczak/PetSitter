@@ -1,3 +1,4 @@
+import { Review } from "./../model/index";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import firebase from "firebase";
 import "firebase/auth";
@@ -17,16 +18,22 @@ const firebaseConfig = {
 	measurementId: "G-997WVR4KND",
 };
 const server = "192.168.0.132";
-
 class API {
+	logout() {
+		firebase.auth().signOut();
+	}
 	async changePassword(password: string) {
-		await this.user?.updatePassword(password)
+		await this.user?.updatePassword(password);
 	}
 	async changeName(name: string) {
-		await firebase.firestore().collection('users').doc(this.user?.uid).update({displayName: name, firstname: name.split(' ')[0], lastname: name.split(' ')[1]})
+		await firebase
+			.firestore()
+			.collection("users")
+			.doc(this.user?.uid)
+			.update({ displayName: name, firstname: name.split(" ")[0], lastname: name.split(" ")[1] });
 		this.user?.updateProfile({
-			displayName: name
-		})
+			displayName: name,
+		});
 	}
 	async getSitterCount(id: string): Promise<number> {
 		return (await firebase.functions().httpsCallable("getSitterCount")({ id })).data;
@@ -39,6 +46,12 @@ class API {
 			.where("requester", "==", this.user?.uid)
 			.orderBy("status")
 			.get();
+		let dataOther = await firebase
+			.firestore()
+			.collection("requests")
+			.where("acceptor", "==", this.user?.uid)
+			.orderBy("status")
+			.get();
 		let result: Request[] = await Promise.all(
 			data.docs.map(async (item) => {
 				let request: Request = item.data() as Request;
@@ -49,6 +62,21 @@ class API {
 				return request;
 			})
 		);
+		let result_array = [
+			...result,
+			...(await Promise.all(
+				dataOther.docs.map(async (item) => {
+					let request: Request = item.data() as Request;
+					request.petEntity = await this.getPet(request.pet);
+					request.id = item.id;
+					request.requesterEntity = (await this.getUser(request.requester)) || null;
+					request.acceptorEntity = (await this.getUser(request.acceptor)) || null;
+					return request;
+				})
+			)),
+		];
+		result = result_array;
+
 		let accepted = result.filter((i) => i.status === "ACCEPTED");
 		accepted.sort((a, b) => +new Date(b.start) - +new Date(a.start));
 		return [
@@ -329,6 +357,22 @@ class API {
 		return firebase.storage().ref(id).getDownloadURL();
 	}
 
+	async uploadPhoto(uri: string, id: string) {
+		let response = await fetch(uri);
+
+		let name = Date.now().toString();
+		await firebase
+			.storage()
+			.ref(name + ".jpg")
+			.put(await response.blob());
+		await firebase
+			.firestore()
+			.collection("pets")
+			.doc(id)
+			.update({ otherImages: firebase.firestore.FieldValue.arrayUnion(name) });
+		return name;
+	}
+
 	async addPet(pet: Pet): Promise<Pet> {
 		// upload main image
 		let response = await fetch(pet.image);
@@ -384,6 +428,21 @@ class API {
 		return null;
 	}
 
+	async getReviews(id: string) {
+		let res = await firebase.firestore().collection("pets").doc(id).collection("reviews").get();
+		return Promise.all(
+			res.docs.map(async (i) => {
+				let review = (await i.data()) as Review;
+				review.authorEntity = await api.getUser(review.author);
+				return review;
+			})
+		);
+	}
+
+	async addReview(text: string, rating: number) {
+		
+	}
+
 	async getLocation(coordinated: any) {
 		let res: any = await fetch(
 			`https://maps.googleapis.com/maps/api/geocode/json?latlng=${coordinated.latitude} ${coordinated.longitude}&key=${googleMapsApi}`
@@ -393,7 +452,7 @@ class API {
 		return {
 			town: res.results[0].address_components.filter((i: any) => i.types.includes("sublocality"))[0]?.long_name || null,
 			country: res.results[0].address_components.filter((i: any) => i.types.includes("country"))[0].long_name,
-			all: res.result[0].formatted_address,
+			all: res.results[0].formatted_address,
 		};
 	}
 }

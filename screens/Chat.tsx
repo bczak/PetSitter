@@ -77,11 +77,11 @@ export default function ChatScreen(props: ScreenProps) {
 			</Card.Content>
 			{
 				item.status === 'ACCEPTED' && (new Date(item.start) < new Date() ?
-					(<Card.Actions style={{ margin: 8, marginTop: 0 }}>
+					(item.acceptor !== api.user?.uid && <Card.Actions style={{ margin: 8, marginTop: 0 }}>
 						<Button mode='contained' onPress={() => props.navigation.navigate('Reviews', { id: item.pet })}>Leave a review</Button>
 					</Card.Actions>) :
 					(<Card.Actions style={{ margin: 8, marginTop: 0 }}>
-						<Button>Your walk starts {DateTime.fromISO(item.start).toRelative()}</Button>
+						<Button>Walk starts {DateTime.fromISO(item.start).toRelative()}</Button>
 					</Card.Actions>))
 			}
 		</Card>;
