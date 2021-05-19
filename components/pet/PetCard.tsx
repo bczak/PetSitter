@@ -47,7 +47,7 @@ export default class PetCard extends Component<PetCardProps, any> {
 					/>
 					<Card.Cover style={styles.cardCover} source={{ uri: this.props.pet.image }} />
 				</TouchableOpacity>
-				<PetRating style={styles.rating} like={this.state.like} setLike={(like: boolean) => this.like(like)} />
+				<PetRating id={this.props.pet.id} navigation={this.props.navigation} style={styles.rating} like={this.state.like} setLike={(like: boolean) => this.like(like)} />
 			</Card>
 		);
 	}

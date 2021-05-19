@@ -28,12 +28,15 @@ export type ScreenProps = {
 }
 export type PetCardProps = {
 	pet: Pet
-	open: Function
+	open: Function,
+	navigation: any
 }
 export type PetRatingProps = {
 	like: boolean
 	setLike: Function
 	style?: Object
+	id: string,
+	navigation: any
 }
 export type ChipSelectionProps = {
 	chips: ChipModel[]

@@ -64,7 +64,7 @@ export default class HomeScreen extends Component<ScreenProps, any> {
 	}
 
 	renderPet(data: { item: Pet }) {
-		return <PetCard pet={data.item} open={() => this.openPet(data.item)} />;
+		return <PetCard pet={data.item} open={() => this.openPet(data.item)} navigation={this.props.navigation} />;
 	}
 
 	async selectChip(chip: ChipModel) {

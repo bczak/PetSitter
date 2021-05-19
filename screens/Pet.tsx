@@ -32,14 +32,6 @@ const AppBar = ({ back }: { back: Function }) => {
 		<Appbar.Header style={styles.header}>
 			<Appbar.BackAction onPress={() => back()} />
 			<Appbar.Content title="Pet" />
-			<Menu
-				visible={visible}
-				onDismiss={closeMenu}
-				anchor={<Appbar.Action color={"white"} icon="dots-vertical" onPress={openMenu} />}
-			>
-				<Menu.Item onPress={() => share()} title="Share" />
-				<Menu.Item onPress={() => report()} title="Report" />
-			</Menu>
 		</Appbar.Header>
 	);
 };
@@ -243,11 +235,13 @@ export default class Pet extends Component<ScreenProps, any> {
 		}
 	}
 	render() {
+		let _ = parseFloat(this.state.reviewsStat.avg).toFixed(1)
+		const $ = (_: string) => isNaN(parseFloat(_))
 		const data = [
 			{
 				color: "#d4af37",
 				icon: "star",
-				text: parseFloat(this.state.reviewsStat.avg).toFixed(1),
+				text: $(_) ? '?' : _,
 				caption: `${this.state.reviewsStat.count} reviews`,
 				onPress: () => this.props.navigation.navigate('Reviews', { id: this.state.pet.id })
 			},
@@ -365,7 +359,7 @@ export default class Pet extends Component<ScreenProps, any> {
 						</Button>
 					)}
 				</View>
-				{(this.state.pet.otherImages || []).length == 0 && <Text style={{margin: 20}}>No photos available</Text>}
+				{(this.state.pet.otherImages || []).length == 0 && <Text style={{ margin: 20 }}>No photos available</Text>}
 				{(this.state.pet.otherImages || []).length > 0 && <>
 
 					<Carousel

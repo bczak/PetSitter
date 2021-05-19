@@ -39,7 +39,7 @@ export default class SearchScreen extends React.Component<ScreenProps, any> {
 	}
 
 	renderPet(data: { item: Pet }) {
-		return <PetCard pet={data.item} open={() => this.openPet(data.item)} />;
+		return <PetCard navigation={this.props.navigation} pet={data.item} open={() => this.openPet(data.item)} />;
 	}
 	async onChangeSearch(text: string) {
 		this.setState(() => ({ search: text }))
